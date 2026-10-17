@@ -1,92 +1,38 @@
-# Obsidian Sample Plugin
+# Name: Dialogue
+Pre-release: 0.0.1
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+### A lightweight Obsidian plugin for writing manuscripts and screenplays.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+**Name: Dialogue** is a barebones plugin that formats dialogue to be a bit more visually appealing.
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
+## Motivation
 
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and outputs a Notice on click.
-- Registers a global interval which logs 'setInterval' to the console.
+I write my dialogue like:
 
-## First time developing plugins?
-
-Quick starting guide for new plugin devs:
-
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `src/main.ts` to `main.js`.
-- Make changes to `src/main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
-
-## Releasing new releases
-
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
-
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
-
-## Adding your plugin to the community plugin list
-
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-## How to use
-
-- Clone this repo.
-- Make sure your NodeJS is at least v18 (`node --version`).
-- `npm i` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
-
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint
-
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code.
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/obsidianmd/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
-{
-	"fundingUrl": "https://buymeacoffee.com"
-}
 ```
+Alice and Bob meet at a park.
 
-If you have multiple URLs, you can also do:
-
-```json
-{
-	"fundingUrl": {
-		"Buy Me a Coffee": "https://buymeacoffee.com",
-		"GitHub Sponsor": "https://github.com/sponsors",
-		"Patreon": "https://www.patreon.com/"
-	}
-}
+Alice: "Hi, Bob."
+Bob: "Hi, Alice."
+Alice: "How are you?"
+Bob: (happily) "I'm great! You?"
+Alice (sighing): "I'm alright. Tough day."
+etc...
 ```
+It's all good and fine, but staring at two-tone pages of dialogue doesn't sit right with my ADHD brain. So, I just wanted to make it a bit more easier for me to parse through long sprawls of sometimes, seemingly monotonous dialogue.
 
-## API Documentation
+## Proposed functionality
 
-See https://docs.obsidian.md
+I want to have colour-coded dialogue boxes for the characters, and I want different styles of dialogue to be represented in different styles. For instance: regular dialogue looks like standard speech bubbles, with solid outlines and quotation marks around what they are saying. Thought bubbles can be italicized, and have a dotted or dashed outline.
+Each character's colour can be changed easily with a settings menu.
+
+It should be as simple as typing: `character_name:dialogue` and the plugin will automatically format it according to the configuration of the plugin. This namespace format will also be further iterated upon with the ability to change aspects of the dialogue box.
+- Example: if you wanted to simulate a text conversation where the recipient and sender are on opposite sides of the screen (left and right respectively, for this example), you can format it as `sender_name:right:dialogue` and `contact_name:left:dialogue`
+
+I hope to eventually ship **Name: Dialogue** as an all-in-one world-building and writing plugin for playwrights, screenwriters, comic writers, and creative writers alike.
+Future implementation of rendering or previews in proper standardized formats is planned. Keep in mind that because I do not have formal training in these trades, I tend to use informal styles.
+
+## Current implementation
+
+Adding a barebones structure for the program. [main.ts](src/main.ts), [settings.ts](src/settings.ts), [types.ts](src/types.ts), and [styles.css](styles.css) should be as slim as possible.
+Modals such as an initial way to view ([characterListModal.ts](src/modals/characterList/characterListModal.ts)) add and edit characters ([characterListEditor.ts](src/modals/characterList/characterListEditor.ts)) are done through [characterList](src/modals/characterList).
