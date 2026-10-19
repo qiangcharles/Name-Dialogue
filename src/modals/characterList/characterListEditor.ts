@@ -26,11 +26,18 @@ export class CharacterListEditor {
 		}
 
 		// Reads list of characters if empty list handler doesn't return, iterates through each chara and builds the card
-		for (const character of this.characters) {
-			characterListCard(container, character, () => {
-				this.characters.splice(this.characters.indexOf(character), 1);
-				container.empty(); this.render(container)
-			})
+		for (const [index, character] of this.characters.entries()) {
+			characterListCard(container, index, character, this.characters.length, () => {
+				this.characters.splice(index, 1); container.empty(); this.render(container)
+			}, (direction) => this.moveCharacter(container, index, direction))
 		}
+	}
+
+	private moveCharacter(container: HTMLElement, index: number, direction: -1 | 1): void {
+		const destination = index + direction;
+		if (destination < 0 || destination >= this.characters.length) return;
+		this.characters.splice(destination, 0, ...this.characters.splice(index, 1));
+		container.empty();
+		this.render(container);
 	}
 }

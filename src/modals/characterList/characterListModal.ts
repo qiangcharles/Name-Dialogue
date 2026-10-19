@@ -3,6 +3,7 @@ import type { App } from "obsidian";
 import type { Character } from "../../types";
 import { CharacterListEditor } from "./characterListEditor";
 import { DiscardChangesModal } from "./discardChangesModal";
+import { validateCharacters } from "../../characters";
 
 export class CharacterListModal extends Modal {
 	constructor(
@@ -27,6 +28,11 @@ export class CharacterListModal extends Modal {
 		if (this.characters.some((character) =>
 			!character.name.trim())) {
 			new Notice("Character name cannot be blank or spaces."); return
+		}
+		const validationError = validateCharacters(this.characters);
+		if (validationError) {
+			new Notice(validationError);
+			return;
 		} try {
 			await this.onSave(this.characters)
 			this.previousCharacters = JSON.stringify(this.characters)
@@ -45,7 +51,7 @@ export class CharacterListModal extends Modal {
 
 	onOpen(): void {
 		this.setTitle("Characters");
-		new CharacterListEditor(this.characters).render(this.contentEl);
+		new CharacterListEditor(this.characters).render(this.contentEl.createDiv())
 		const actions = new Setting(this.contentEl);
 
 		actions.addButton((button) =>

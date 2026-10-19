@@ -1,9 +1,6 @@
 # Name: Dialogue
-Pre-release: 0.0.1
-
-### A lightweight Obsidian plugin for writing manuscripts and screenplays.
-
-**Name: Dialogue** is a barebones plugin that formats dialogue to be a bit more visually appealing.
+A barebones Obsidian plugin that formats dialogue to be a bit more visually appealing.
+### Pre-release: 0.3.0-0
 
 ## Motivation
 
@@ -20,6 +17,7 @@ Alice (sighing): "I'm alright. Tough day."
 etc...
 ```
 It's all good and fine, but staring at two-tone pages of dialogue doesn't sit right with my ADHD brain. So, I just wanted to make it a bit more easier for me to parse through long sprawls of sometimes, seemingly monotonous dialogue.
+This README outlines the original proposed functionality, functions that are currently implemented and operable, as well as functionality I intend on implementing sooner rather than later.
 
 ## Proposed functionality
 
@@ -32,7 +30,15 @@ It should be as simple as typing: `character_name:dialogue` and the plugin will 
 I hope to eventually ship **Name: Dialogue** as an all-in-one world-building and writing plugin for playwrights, screenwriters, comic writers, and creative writers alike.
 Future implementation of rendering or previews in proper standardized formats is planned. Keep in mind that because I do not have formal training in these trades, I tend to use informal styles.
 
-## Current implementation
+## Current functionality
+- Editing, creating, renaming, colouring characters are done through the [characterList](src/modals/characterList) modal.
+  - You're able to save your characters' names, set their aliases, set a colour, and rearrange them
+  - Editor window prompts for confirmation when exiting; doesn't immediately save on edit
 
-Adding a barebones structure for the program. [main.ts](src/main.ts), [settings.ts](src/settings.ts), [types.ts](src/types.ts), and [styles.css](styles.css) should be as slim as possible.
-Modals such as an initial way to view ([characterListModal.ts](src/modals/characterList/characterListModal.ts)) add and edit characters ([characterListEditor.ts](src/modals/characterList/characterListEditor.ts)) are done through [characterList](src/modals/characterList).
+## Planned functionality
+- [`./settings.ts`](src/settings.ts)
+  - Editable namespace/parsing regex for dialogue; by default it will be `name:extras:dialogue`, and type of speech will be primarily denoted by the wrappers `"..."` and `(...)` for regular speech and thought, respectively
+- [`./modals/characterList`](src/modals/characterList)
+  - Add `import` function
+  - Rearrange UI so that its more compact; make it scrollable
+  - Needs visual indicator when a save is made, or when there are unchanged settings
