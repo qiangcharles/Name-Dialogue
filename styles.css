@@ -1,8 +1,39 @@
-/*
+/* Modal */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.modal.character-list-modal {
+	width: fit-content;
+	max-width: calc(100vw - 2rem)
+}
 
-If your plugin does not need CSS, delete this file.
+.character-list-modal {
+	height: auto;
+	max-height: calc(100vh - 2rem); /* So modal doesnt extend past Obsidian parent window */
+}
 
-*/
+.character-list-modal .modal-content {
+	max-height: calc(100vh - 8rem); /* So contents don't extend past the modal */
+	overflow-y: auto;
+}
+
+/* Card */
+
+.character-card {
+	margin-top: 0.5rem;
+	margin-bottom: 0.5rem;
+}
+
+.character-card-fields {
+	display:flex;
+	gap: 0.5rem;
+}
+
+.character-card-ctrl {
+	display:flex;
+	gap: 0.5rem;
+}
+
+.character-colour-ctrl {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}

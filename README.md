@@ -34,6 +34,8 @@ Future implementation of rendering or previews in proper standardized formats is
 - Editing, creating, renaming, colouring characters are done through the [characterList](src/modals/characterList) modal.
   - You're able to save your characters' names, set their aliases, set a colour, and rearrange them
   - Editor window prompts for confirmation when exiting; doesn't immediately save on edit
+  - Resizes appropriately, according to viewport size
+  - Lists characters in a row
 
 ## Planned functionality
 - [`./settings.ts`](src/settings.ts)
@@ -42,3 +44,6 @@ Future implementation of rendering or previews in proper standardized formats is
   - Add `import` function
   - Rearrange UI so that its more compact; make it scrollable
   - Needs visual indicator when a save is made, or when there are unchanged settings
+  - Make character entries (cards) reorderable by dragging
+  - Want to restructure narrow screen handling with custom condensed layout rather than just wrapping
+  - Perhaps have different layouts and option to represent characters by image chips/squares rather than just lines of text

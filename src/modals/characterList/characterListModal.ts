@@ -50,6 +50,7 @@ export class CharacterListModal extends Modal {
 	}
 
 	onOpen(): void {
+		this.modalEl.classList.add("character-list-modal");
 		this.setTitle("Characters");
 		new CharacterListEditor(this.characters).render(this.contentEl.createDiv())
 		const actions = new Setting(this.contentEl);

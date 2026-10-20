@@ -1,5 +1,6 @@
-import { Setting } from "obsidian"
+import { ButtonComponent, ColorComponent, TextComponent } from "obsidian"
 import type { Character } from "../../types";
+import { validateHexColour } from "../../characters";
 
 export function characterListCard(container: HTMLElement,
 								  index: number,
@@ -10,34 +11,45 @@ export function characterListCard(container: HTMLElement,
 
 	// TODO: try to find out how to make the interface more compact using built-in elements, otherwise offload rendering to CSS styles for ideal UX
 	// Rendering of the characterList card for the editor; adds element by calling card:HTMLDivElement
-	const card:HTMLDivElement = container.createDiv({ cls: "character-card" });
-	const controls = new Setting(card)
+	const card: HTMLDivElement = container.createDiv({ cls: "character-card" });
+	const row = card.createDiv({ cls: "character-card-fields" })
 
-	// Renders each separate field; name, aliases, and colour
-	new Setting(card).setName("Name").addText((text) =>
-		text.setValue(character.name).onChange((value) => { character.name = value })) // Update modal draft
+	// Render fields first, then controls
+	const nameControls: HTMLDivElement = row.createDiv({ cls: "card-name-field" });
+	new TextComponent(nameControls).setPlaceholder("Name")
+		.setValue(character.name)
+		.onChange((value) => { character.name = value });
 
-	new Setting(card).setName("Aliases").addText((text) =>
-		text.setValue(character.aliases.join(", ")).onChange((value) => {
-			character.aliases = value.split(",").map((alias) => alias.trim()).filter(Boolean) }))
+	const aliasControls: HTMLDivElement = row.createDiv({ cls: "card-alias-field" });
+	new TextComponent(aliasControls).setPlaceholder("Alias 1, alias 2...")
+		.setValue(character.aliases.join(", "))
+		.onChange((value) => { character.aliases = value
+			.split(", ")
+			.map((alias) => alias
+				.trim()).filter(Boolean) }); // filter(Boolean) handles empty string aliases
 
-	new Setting(card).setName("Colour").addColorPicker((picker) =>
-		picker.setValue(character.colour).onChange((value) =>
-		{ character.colour = value }))
+	const cardColourControls = row.createDiv({ cls: "character-colour-ctrl" });
+	const hexInput = new TextComponent(cardColourControls)
+		.setPlaceholder("#RRGGBB")
+		.setValue(character.colour);
+	const picker = new ColorComponent(cardColourControls)
+		.setValue(character.colour);
+	hexInput.onChange((value) => {
+		character.colour = value;
+		if (validateHexColour(value)) { picker.setValue(value) }});
+	picker.onChange((value) => {
+		character.colour = value;
+		if (validateHexColour(value)) { hexInput.setValue(value) }});
 
-	controls.addButton((button) =>
-		button.setIcon("trash").setTooltip("Delete")
-			.setDestructive()
-			.onClick(onDelete))
-
-	controls.addButton((button) =>
-		button.setIcon("arrow-up").setTooltip("Move up")
-			.setDisabled(index === 0)
-			.onClick(() => onMove(-1)))
-
-	controls.addButton((button) =>
-		button.setIcon("arrow-down").setTooltip("Move down")
-			.setDisabled(index === characterCount - 1)
-			.onClick(() => onMove(1)))
+	const cardControls = row.createDiv({ cls: "character-card-ctrl" });
+	new ButtonComponent(cardControls).setIcon("arrow-up").setTooltip("Move up")
+		.setDisabled(index === 0)
+		.onClick(() => onMove(-1));
+	new ButtonComponent(cardControls).setIcon("arrow-down").setTooltip("Move down")
+		.setDisabled(index === characterCount - 1)
+		.onClick(() => onMove(1));
+	new ButtonComponent(cardControls).setIcon("trash").setTooltip("Delete")
+		.setDestructive()
+		.onClick(onDelete);
 
 }

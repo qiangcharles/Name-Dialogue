@@ -1,4 +1,5 @@
 import type { Character } from "../../types";
+import { ButtonComponent } from "obsidian"
 import { characterListCard } from "./characterListCard";
 
 export class CharacterListEditor {
@@ -7,6 +8,20 @@ export class CharacterListEditor {
 	private nextCharacterId(): number { return Math.max(0, ...this.characters.map(({ id }) => id)) + 1 }
 	render(container: HTMLElement): void {
 
+		const modalHeader = container.createDiv({ cls: "modal-editor-head" })
+		new ButtonComponent(modalHeader).setIcon("plus").setTooltip("Add character")
+			.setDisabled(false)
+			.onClick(() => { this.characters.push({
+				id: this.nextCharacterId(),
+				name: "",
+				aliases: [],
+				colour: "#676767"
+			});
+				container.empty();
+				this.render(container);
+			});
+
+		/*
 		const addButton = container.createEl("button", { text: "Add character" })
 		addButton.addEventListener("click", () => {
 			this.characters.push({
@@ -17,7 +32,8 @@ export class CharacterListEditor {
 			});
 			container.empty();
 			this.render(container);
-		})
+		});
+		*/
 
 		// Empty list handling
 		if (this.characters.length === 0) {
