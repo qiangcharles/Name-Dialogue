@@ -30,7 +30,7 @@ export function characterListCard(container: HTMLElement,
 
 	const cardColourControls = row.createDiv({ cls: "character-colour-ctrl" });
 	const hexInput = new TextComponent(cardColourControls)
-		.setPlaceholder("#RRGGBB")
+		.setPlaceholder("#676767")
 		.setValue(character.colour);
 	const picker = new ColorComponent(cardColourControls)
 		.setValue(character.colour);

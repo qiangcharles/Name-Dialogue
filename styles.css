@@ -37,3 +37,81 @@
 	align-items: center;
 	gap: 0.25rem;
 }
+
+/* Dialogue */
+
+.dialogue-box {
+	position: relative;
+	display: block;
+	box-sizing: border-box;
+	margin: 0.8rem 0 !important;
+	padding: 1rem 1rem 0.55rem !important;
+	--border-colour: color-mix(
+		in srgb,
+		var(--character-colour) 55%,
+		var(--background-modifier-border)
+	);
+	border: 1.5px solid var(--border-colour) !important;
+	border-radius: 12px;
+	background: color-mix(
+		in srgb,
+		var(--character-colour) 11%,
+		var(--background-primary)
+	);
+	line-height: 1.45;
+	overflow: visible;
+}
+
+.dialogue-box + .dialogue-box {
+	margin-top: 1.2rem !important;
+}
+
+.character-label {
+	position: absolute;
+	top: 0;
+	left: 1rem;
+	z-index: 1;
+	padding: 0.12rem 0.4rem;
+	color: var(--text-normal);
+	background: var(--border-colour);
+	font-size: 0.7em;
+	font-weight: 650;
+	line-height: 1.15;
+	white-space: nowrap;
+	border-radius: 4px;
+	transform: translateY(-50%);
+}
+
+.dialogue-style-thought {
+	border-style: dashed !important;
+	border-radius: 18px;
+	background: color-mix(
+		in srgb,
+		var(--character-colour) 9%,
+		var(--background-primary)
+	);
+	font-style: italic;
+}
+
+.dialogue-line-left,
+.dialogue-line-right {
+	width: fit-content;
+	max-width: 80%;
+}
+
+.dialogue-line-left {
+	margin-right: auto;
+}
+
+.dialogue-line-right {
+	margin-left: auto;
+}
+
+.dialogue-style-speech .dialogue-text {
+	color: color-mix(in srgb, var(--character-colour) 82%, var(--text-normal));
+	font-weight: 750;
+}
+
+.dialogue-invalid {
+	color: var(--text-error);
+}

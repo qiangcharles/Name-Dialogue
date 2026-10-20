@@ -9,7 +9,7 @@ export interface NameDialogueSettings {
 }
 
 export const DEFAULT_SETTINGS: NameDialogueSettings = {
-	namespaceRegex: String.raw`^(?<name>[^:]+):\s*(?<dialogue>.*)$`,
+	namespaceRegex: String.raw`^(?<name>[^:]+):(?:(?<namespaces>(?:[^:]+:)+))?(?<dialogue>(?:[^:]|::)*)$`,
 	characters: [],
 }
 
