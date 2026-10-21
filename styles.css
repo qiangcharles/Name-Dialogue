@@ -44,14 +44,14 @@
 	position: relative;
 	display: block;
 	box-sizing: border-box;
-	margin: 0.8rem 0 !important;
-	padding: 1rem 1rem 0.55rem !important;
+	margin: 0.8rem 0;
+	padding: 1rem 1rem 0.55rem;
 	--border-colour: color-mix(
 		in srgb,
 		var(--character-colour) 55%,
 		var(--background-modifier-border)
 	);
-	border: 1.5px solid var(--border-colour) !important;
+	border: 1.5px solid var(--border-colour);
 	border-radius: 12px;
 	background: color-mix(
 		in srgb,
@@ -63,7 +63,7 @@
 }
 
 .dialogue-box + .dialogue-box {
-	margin-top: 1.2rem !important;
+	margin-top: 1.2rem;
 }
 
 .character-label {
@@ -83,7 +83,7 @@
 }
 
 .dialogue-style-thought {
-	border-style: dashed !important;
+	border-style: dashed;
 	border-radius: 18px;
 	background: color-mix(
 		in srgb,
