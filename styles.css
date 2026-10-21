@@ -45,7 +45,6 @@
 	display: block;
 	box-sizing: border-box;
 	margin: 0.8rem 0;
-	padding: 1rem 1rem 0.55rem;
 	--border-colour: color-mix(
 		in srgb,
 		var(--character-colour) 55%,
@@ -60,6 +59,10 @@
 	);
 	line-height: 1.45;
 	overflow: visible;
+}
+
+.cm-line.dialogue-box {
+	padding: 1rem 1rem 0.55rem;
 }
 
 .dialogue-box + .dialogue-box {
@@ -107,9 +110,14 @@
 	margin-left: auto;
 }
 
-.dialogue-style-speech .dialogue-text {
+.dialogue-text {
+	color: var(--text-normal);
+	font-weight: 400;
+}
+
+.dialogue-wrapper {
 	color: color-mix(in srgb, var(--character-colour) 82%, var(--text-normal));
-	font-weight: 750;
+	font-weight: 700;
 }
 
 .dialogue-invalid {

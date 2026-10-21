@@ -66,23 +66,31 @@ function addDialogueTextDecorations(builder: RangeSetBuilder<Decoration>,
 		parsed.rawDialogue.length >= open.length + close.length
 		&& parsed.rawDialogue.startsWith(open)
 		&& parsed.rawDialogue.endsWith(close);
+	const bodyFrom = dialogueFrom + (hasExplicitWrapper ? open.length : 0);
+	const bodyTo = dialogueTo - (hasExplicitWrapper ? close.length : 0);
 
 	if (!hasExplicitWrapper && dialogueFrom < dialogueTo) {
 		builder.add(
 			dialogueFrom,
 			dialogueFrom,
 			Decoration.widget({
-				widget: new InlineTextWidget(open, "dialogue-text"),
+				widget: new InlineTextWidget(open, "dialogue-wrapper"),
 				side: -1,
 			}),
 		);
+	} else if (hasExplicitWrapper) {
+		builder.add(
+			dialogueFrom,
+			bodyFrom,
+			Decoration.mark({ class: "dialogue-wrapper" }),
+		);
 	}
 
-	let contentFrom = dialogueFrom;
+	let contentFrom = bodyFrom;
 	for (const escapedColonOffset of parsed.escapedColonOffsets) {
 		const escapedColonFrom = lineFrom + escapedColonOffset;
 		const escapedColonTo = escapedColonFrom + 2;
-		if (escapedColonFrom < contentFrom || escapedColonTo > dialogueTo) continue;
+		if (escapedColonFrom < contentFrom || escapedColonTo > bodyTo) continue;
 
 		if (contentFrom < escapedColonFrom) {
 			builder.add(
@@ -101,10 +109,10 @@ function addDialogueTextDecorations(builder: RangeSetBuilder<Decoration>,
 		contentFrom = escapedColonTo;
 	}
 
-	if (contentFrom < dialogueTo) {
+	if (contentFrom < bodyTo) {
 		builder.add(
 			contentFrom,
-			dialogueTo,
+			bodyTo,
 			Decoration.mark({ class: "dialogue-text" }),
 		);
 	}
@@ -114,9 +122,15 @@ function addDialogueTextDecorations(builder: RangeSetBuilder<Decoration>,
 			dialogueTo,
 			dialogueTo,
 			Decoration.widget({
-				widget: new InlineTextWidget(close, "dialogue-text"),
+				widget: new InlineTextWidget(close, "dialogue-wrapper"),
 				side: 1,
 			}),
+		);
+	} else if (hasExplicitWrapper) {
+		builder.add(
+			bodyTo,
+			dialogueTo,
+			Decoration.mark({ class: "dialogue-wrapper" }),
 		);
 	}
 }
