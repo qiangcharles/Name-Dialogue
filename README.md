@@ -1,4 +1,4 @@
-# Name: Dialogue
+# Name Dialogue
 ### Version 2.0.0
 `name-dialogue` is a barebones Obsidian plugin that formats dialogue to be a bit more visually appealing. It gets its name from the way I write my scripts. For example:
 ```

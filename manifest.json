@@ -3,7 +3,7 @@
 	"name": "Name Dialogue",
 	"version": "2.0.0",
 	"minAppVersion": "1.13.0",
-	"description": "An Obsidian plugin that adds formatting to dialogue in scripts.",
+	"description": "Decorate dialogue in scripts.",
 	"author": "Charles Qiang",
 	"authorUrl": "https://github.com/qiangcharles",
 	"fundingUrl": "https://patreon.com/charlesqiang",
