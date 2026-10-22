@@ -1,0 +1,34 @@
+/* Modal */
+
+.modal.character-list-modal {
+	width: fit-content;
+	max-width: calc(100vw - 2rem)
+}
+
+.character-list-modal {
+	height: auto;
+	max-height: calc(100vh - 2rem); /* So modal doesnt extend past Obsidian parent window */
+}
+
+.character-list-modal .modal-content {
+	max-height: calc(100vh - 8rem); /* So contents don't extend past the modal */
+	overflow-y: auto;
+}
+
+/* Card */
+
+.character-card {
+	margin: 0.5rem 0;
+}
+
+.character-card-fields,
+.character-card-ctrl {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.character-colour-ctrl {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+}

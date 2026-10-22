@@ -1,14 +1,6 @@
 # Name: Dialogue
-Pre-release: 0.0.1
-
-### A lightweight Obsidian plugin for writing manuscripts and screenplays.
-
-**Name: Dialogue** is a barebones plugin that formats dialogue to be a bit more visually appealing.
-
-## Motivation
-
-I write my dialogue like:
-
+### Version 2.0.0
+`name-dialogue` is a barebones Obsidian plugin that formats dialogue to be a bit more visually appealing. It gets its name from the way I write my scripts. For example:
 ```
 Alice and Bob meet at a park.
 
@@ -19,20 +11,26 @@ Bob: (happily) "I'm great! You?"
 Alice (sighing): "I'm alright. Tough day."
 etc...
 ```
-It's all good and fine, but staring at two-tone pages of dialogue doesn't sit right with my ADHD brain. So, I just wanted to make it a bit more easier for me to parse through long sprawls of sometimes, seemingly monotonous dialogue.
 
-## Proposed functionality
+Keep in mind: this is a very informal way of writing scripts. For those interested in writing proper formal scripts, I would look into formal screenplay templates. However, an export/conversion method from `name-dialogue` files to official scripts is in the planned functions section.
 
-I want to have colour-coded dialogue boxes for the characters, and I want different styles of dialogue to be represented in different styles. For instance: regular dialogue looks like standard speech bubbles, with solid outlines and quotation marks around what they are saying. Thought bubbles can be italicized, and have a dotted or dashed outline.
-Each character's colour can be changed easily with a settings menu.
+## Current functionality
+- Editing, creating, renaming, colouring characters are done through the [characterList](src/modals/characterList) modal
+  - You're able to save your characters' names, set their aliases, set a colour, and rearrange them
+  - Editor window prompts for confirmation when exiting; doesn't immediately save on edit
+  - Resizes appropriately, according to viewport size
+  - Lists characters in a row
+- The namespace format regex parses the following:
+  - `[name]:[options]:[dialogue]`
+  - The default options are: `thought` and `right`
+- Dialogue wrappers (speech quotes and thought parentheses) are added by the plugin; wrapper characters typed in the dialogue remain visible as regular dialogue text on purpose, if you like to use those characters for emphasis
 
-It should be as simple as typing: `character_name:dialogue` and the plugin will automatically format it according to the configuration of the plugin. This namespace format will also be further iterated upon with the ability to change aspects of the dialogue box.
-- Example: if you wanted to simulate a text conversation where the recipient and sender are on opposite sides of the screen (left and right respectively, for this example), you can format it as `sender_name:right:dialogue` and `contact_name:left:dialogue`
-
-I hope to eventually ship **Name: Dialogue** as an all-in-one world-building and writing plugin for playwrights, screenwriters, comic writers, and creative writers alike.
-Future implementation of rendering or previews in proper standardized formats is planned. Keep in mind that because I do not have formal training in these trades, I tend to use informal styles.
-
-## Current implementation
-
-Adding a barebones structure for the program. [main.ts](src/main.ts), [settings.ts](src/settings.ts), [types.ts](src/types.ts), and [styles.css](styles.css) should be as slim as possible.
-Modals such as an initial way to view ([characterListModal.ts](src/modals/characterList/characterListModal.ts)) add and edit characters ([characterListEditor.ts](src/modals/characterList/characterListEditor.ts)) are done through [characterList](src/modals/characterList).
+## Planned functionality
+- 
+- [`./settings.ts`](src/settings.ts)
+  - Editable namespace/parsing regex for dialogue
+- [`./modals/characterList`](src/modals/characterList)
+  - Needs visual indicator when a save is made, or when there are unchanged settings
+  - Make character entries (cards) reorderable by dragging
+  - Want to restructure narrow screen handling with custom condensed layout rather than just wrapping
+  - Perhaps have different layouts and option to represent characters by image chips/squares rather than just lines of text
