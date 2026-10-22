@@ -2,7 +2,7 @@ import { Plugin } from "obsidian";
 import { DEFAULT_SETTINGS, NameDialogueSettingsTab, type NameDialogueSettings } from "./settings";
 import { CharacterListModal } from "./modals/characterList/characterListModal";
 import type { Character } from "./types"
-import { createDialogueExtension } from "./decoration";
+import { createView } from "./decoration";
 
 export default class NameDialogue extends Plugin {
 	settings!: NameDialogueSettings;
@@ -26,7 +26,7 @@ export default class NameDialogue extends Plugin {
 		this.settings = { ...DEFAULT_SETTINGS, ...(savedSettings ?? {}) };
 		this.addSettingTab(new NameDialogueSettingsTab(this.app, this))
 		this.registerEditorExtension(
-			createDialogueExtension(() => this.settings),
+			createView(() => this.settings),
 		);
 
 		// Interface/command implementation

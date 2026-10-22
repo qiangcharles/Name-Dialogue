@@ -1,6 +1,6 @@
 import type { MarkdownPostProcessorContext } from "obsidian";
 import type { Character } from "./types";
-import { parseDialogueLine, type ParsedDialogue } from "./dialogue";
+import { parseSource, type ParsedDialogue } from "./dialogue";
 
 // Render per section
 export function getSourceLines(sectionEl: HTMLElement, context: MarkdownPostProcessorContext): string[] {
@@ -16,7 +16,6 @@ function applyNamespace(namespace: string, line: HTMLElement): boolean {
 		case "full":
 			line.dataset.nameMode = namespace;
 			return true;
-		case "left":
 		case "right":
 			line.classList.add(`dialogue-line-${namespace}`);
 			return true;
@@ -32,11 +31,11 @@ function stripWrapper(text: string, open: string, close: string): string {
 		: trimmed;
 }
 
-function createCharacterLabel(character: Character): HTMLSpanElement {
-	const label = document.createSpan();
-	label.className = "character-label";
-	label.textContent = character.name;
-	return label;
+function createNameplate(character: Character): HTMLSpanElement {
+	const nameplate = document.createSpan();
+	nameplate.className = "character-nameplate";
+	nameplate.textContent = character.name;
+	return nameplate;
 }
 
 function createDialogueText(dialogue: string, isThought: boolean): HTMLSpanElement {
@@ -57,7 +56,7 @@ function createDialogueBox(parsed: ParsedDialogue): HTMLDivElement {
 	dialogueBox.className = `dialogue-box dialogue-style-${isThought ? "thought" : "speech"}`;
 	dialogueBox.style.setProperty("--character-colour", parsed.character.colour);
 	dialogueBox.append(
-		createCharacterLabel(parsed.character),
+		createNameplate(parsed.character),
 		createDialogueText(parsed.dialogue, isThought),
 	);
 	return dialogueBox;
@@ -72,7 +71,7 @@ export function renderDialogue(sectionEl: HTMLElement,
 
 	const parsedLines = sourceLines.map((sourceLine) => ({
 		sourceLine,
-		parsed: parseDialogueLine(sourceLine, regex, characters),
+		parsed: parseSource(sourceLine, regex, characters),
 	}));
 	if (parsedLines.some(({ parsed }) => parsed === null)) return;
 
@@ -82,7 +81,7 @@ export function renderDialogue(sectionEl: HTMLElement,
 		const line = createDialogueBox(parsed);
 		let invalidNamespace = false;
 		for (const namespace of parsed.namespaces) { if (!applyNamespace(namespace, line)) invalidNamespace = true }
-		if (invalidNamespace) { line.className = "dialogue-invalid"; line.textContent = sourceLine }
+		if (invalidNamespace) { line.className = "invalid-namespace"; line.textContent = sourceLine }
 		output.appendChild(line);
 	}
 

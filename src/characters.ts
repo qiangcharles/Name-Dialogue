@@ -1,26 +1,30 @@
 import type { Character } from "./types";
 
-export function normalizeName(label: string): string {
-	return label.trim().toLocaleLowerCase()
+function validateNames(names: readonly string[]): boolean {
+	return new Set(names).size === names.length;
 }
 
-export function validateCharacters(characters: readonly Character[]): string | null {
-	const labels = characters
-		.flatMap((character) => [character.name, ...character.aliases])
-		.map(normalizeName)
-		.filter(Boolean);
-
-	if (characters.some(({ colour }) => !validateHexColour(colour))) {
-		return "Colours must be hex codes."
-	}
-
-	if (new Set(labels).size !== labels.length) {
-		return "Character names and aliases must be unique."
-	}
-
-	return null;
+function validateAliases(validCharacter: readonly string[]): boolean {
+	return new Set(validCharacter).size === validCharacter.length;
 }
 
 export function validateHexColour(value: string): boolean {
 	return /^#[\da-f]{6}$/i.test(value);
+}
+
+export function validateCharacter(characters: readonly Character[]): string | null {
+	const normalizedNames = characters
+		.map(({ name }) => name.trim().toLocaleLowerCase())
+		.filter(Boolean);
+	const validCharacter = characters
+		.flatMap((character) => [character.name, ...character.aliases])
+		.map((nameOrAlias) => nameOrAlias.trim().toLocaleLowerCase())
+		.filter(Boolean);
+
+	if (characters.some(({ colour }) =>
+		!validateHexColour(colour))) { return "Colours must be hex codes." }
+	if (!validateNames(normalizedNames) || !validateAliases(validCharacter)) {
+		return "Character names and aliases must be unique.";
+	}
+	return null;
 }

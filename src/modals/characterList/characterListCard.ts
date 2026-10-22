@@ -9,7 +9,6 @@ export function characterListCard(container: HTMLElement,
 								  onDelete: () => void,
 								  onMove: (direction: -1 | 1) => void): void {
 
-	// TODO: try to find out how to make the interface more compact using built-in elements, otherwise offload rendering to CSS styles for ideal UX
 	// Rendering of the characterList card for the editor; adds element by calling card:HTMLDivElement
 	const card: HTMLDivElement = container.createDiv({ cls: "character-card" });
 	const row = card.createDiv({ cls: "character-card-fields" })

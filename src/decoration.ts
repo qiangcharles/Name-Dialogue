@@ -1,24 +1,24 @@
 // eslint-disable-next-line import/no-extraneous-dependencies -- Obsidian supplies CodeMirror and esbuild externalizes it.
 import { RangeSetBuilder } from "@codemirror/state";
+// eslint-disable-next-line import/no-extraneous-dependencies -- Obsidian supplies CodeMirror and esbuild externalizes it.
 import { Decoration, ViewPlugin, WidgetType } from "@codemirror/view";
 import type { DecorationSet, EditorView, ViewUpdate } from "@codemirror/view";
-import { parseDialogueLine, type ParsedDialogue } from "./dialogue";
+import { parseSource, type ParsedDialogue } from "./dialogue";
 import type { NameDialogueSettings } from "./settings";
 
 interface NamespaceOptions {
 	thought: boolean;
-	alignment?: "left" | "right";
+	alignment?: "right";
 	nameMode?: "full";
 }
 
-class InlineTextWidget extends WidgetType {
-	constructor(
-		private readonly text: string,
-		private readonly className: string,
-	) { super() }
+class InlineTextWidget extends WidgetType { // CodeMirror
+	constructor(private readonly text: string,
+				private readonly className: string ) { super() }
 
 	eq(other: InlineTextWidget): boolean {
-		return this.text === other.text && this.className === other.className;
+		return this.text === other.text
+			&& this.className === other.className;
 	}
 
 	toDOM(): HTMLElement {
@@ -31,7 +31,7 @@ class InlineTextWidget extends WidgetType {
 	ignoreEvent(): boolean { return false }
 }
 
-function resolveNamespaces(namespaces: readonly string[]): NamespaceOptions | null {
+function getNamespaces(namespaces: readonly string[]): NamespaceOptions | null {
 	const options: NamespaceOptions = { thought: false };
 
 	for (const namespace of namespaces) {
@@ -42,7 +42,6 @@ function resolveNamespaces(namespaces: readonly string[]): NamespaceOptions | nu
 			case "full":
 				options.nameMode = namespace;
 				break;
-			case "left":
 			case "right":
 				options.alignment = namespace;
 				break;
@@ -54,43 +53,31 @@ function resolveNamespaces(namespaces: readonly string[]): NamespaceOptions | nu
 	return options;
 }
 
-function addDialogueTextDecorations(builder: RangeSetBuilder<Decoration>,
-									lineFrom: number,
-									parsed: ParsedDialogue,
-									isThought: boolean): void {
+function hasWrappers(parsed: ParsedDialogue): boolean { return parsed.dialogueFrom < parsed.dialogueTo }
+
+function isNameSelected(view: EditorView,
+						lineFrom: number,
+						parsed: ParsedDialogue): boolean {
+	const nameFrom = lineFrom + parsed.nameFrom;
+	const nameTo = lineFrom + parsed.nameTo;
+
+	return view.state.selection.ranges.some(({ from, to }) =>
+		from === to
+			? from >= nameFrom && from <= nameTo
+			: from < nameTo && to > nameFrom,
+	);
+}
+
+function decorateText(builder: RangeSetBuilder<Decoration>,
+					  lineFrom: number,
+					  parsed: ParsedDialogue): void {
 	const dialogueFrom = lineFrom + parsed.dialogueFrom;
 	const dialogueTo = lineFrom + parsed.dialogueTo;
-	const open = isThought ? "(" : "\"";
-	const close = isThought ? ")" : "\"";
-	const hasExplicitWrapper =
-		parsed.rawDialogue.length >= open.length + close.length
-		&& parsed.rawDialogue.startsWith(open)
-		&& parsed.rawDialogue.endsWith(close);
-	const bodyFrom = dialogueFrom + (hasExplicitWrapper ? open.length : 0);
-	const bodyTo = dialogueTo - (hasExplicitWrapper ? close.length : 0);
-
-	if (!hasExplicitWrapper && dialogueFrom < dialogueTo) {
-		builder.add(
-			dialogueFrom,
-			dialogueFrom,
-			Decoration.widget({
-				widget: new InlineTextWidget(open, "dialogue-wrapper"),
-				side: -1,
-			}),
-		);
-	} else if (hasExplicitWrapper) {
-		builder.add(
-			dialogueFrom,
-			bodyFrom,
-			Decoration.mark({ class: "dialogue-wrapper" }),
-		);
-	}
-
-	let contentFrom = bodyFrom;
+	let contentFrom = dialogueFrom;
 	for (const escapedColonOffset of parsed.escapedColonOffsets) {
 		const escapedColonFrom = lineFrom + escapedColonOffset;
 		const escapedColonTo = escapedColonFrom + 2;
-		if (escapedColonFrom < contentFrom || escapedColonTo > bodyTo) continue;
+		if (escapedColonFrom < contentFrom || escapedColonTo > dialogueTo) continue;
 
 		if (contentFrom < escapedColonFrom) {
 			builder.add(
@@ -109,64 +96,71 @@ function addDialogueTextDecorations(builder: RangeSetBuilder<Decoration>,
 		contentFrom = escapedColonTo;
 	}
 
-	if (contentFrom < bodyTo) {
+	if (contentFrom < dialogueTo) {
 		builder.add(
 			contentFrom,
-			bodyTo,
+			dialogueTo,
 			Decoration.mark({ class: "dialogue-text" }),
-		);
-	}
-
-	if (!hasExplicitWrapper && dialogueFrom < dialogueTo) {
-		builder.add(
-			dialogueTo,
-			dialogueTo,
-			Decoration.widget({
-				widget: new InlineTextWidget(close, "dialogue-wrapper"),
-				side: 1,
-			}),
-		);
-	} else if (hasExplicitWrapper) {
-		builder.add(
-			bodyTo,
-			dialogueTo,
-			Decoration.mark({ class: "dialogue-wrapper" }),
 		);
 	}
 }
 
-function addDialogueDecorations(
-	builder: RangeSetBuilder<Decoration>,
-	lineFrom: number,
-	parsed: ParsedDialogue,
-	options: NamespaceOptions,
-): void {
-	const lineClasses = [
-		"dialogue-box",
-		options.thought ? "dialogue-style-thought" : "dialogue-style-speech",
-	];
-	if (options.alignment) lineClasses.push(`dialogue-line-${options.alignment}`);
+function addNameplate(builder: RangeSetBuilder<Decoration>,
+						 lineFrom: number,
+						 parsed: ParsedDialogue,
+						 isNameActive: boolean): void {
+	if (!isNameActive) {
+		builder.add(
+			lineFrom,
+			lineFrom + parsed.dialogueFrom,
+			Decoration.replace({
+				widget: new InlineTextWidget(parsed.character.name, "character-nameplate"),
+			}),
+		);
+		return;
+	}
+
+	const nameFrom = lineFrom + parsed.nameFrom;
+	const nameTo = lineFrom + parsed.nameTo;
+	const prefixTo = lineFrom + parsed.dialogueFrom;
+	const hiddenText = Decoration.mark({ class: "dialogue-source-hidden" });
+
+	if (lineFrom < nameFrom) {
+		builder.add(lineFrom, nameFrom, hiddenText);
+	}
+	builder.add(
+		nameFrom,
+		nameTo,
+		Decoration.mark({ class: "character-nameplate character-nameplate-active" }),
+	);
+	if (nameTo < prefixTo) {
+		builder.add(nameTo, prefixTo, hiddenText);
+	}
+}
+
+function addDecorations(builder: RangeSetBuilder<Decoration>,
+						lineFrom: number,
+						parsed: ParsedDialogue,
+						options: NamespaceOptions,
+						isNameActive: boolean): void {
+	const showWrappers = hasWrappers(parsed);
+	const lineClasses = ["dialogue-box",
+		options.thought ? "dialogue-style-thought" : "dialogue-style-speech"];
+	if (showWrappers) lineClasses.push("dialogue-has-content");
+	lineClasses.push(`dialogue-line-${options.alignment ?? "left"}`);
+	if (isNameActive) lineClasses.push("dialogue-name-active");
 
 	const attributes: Record<string, string> = {
 		style: `--character-colour: ${parsed.character.colour};`,
-		"data-dialogue-type": options.thought ? "thought" : "speech",
-	};
+		"data-dialogue-type": options.thought ? "thought" : "speech" };
 	if (options.nameMode) attributes["data-name-mode"] = options.nameMode;
 
 	builder.add(
 		lineFrom,
 		lineFrom,
-		Decoration.line({ class: lineClasses.join(" "), attributes }),
-	);
-	builder.add(
-		lineFrom,
-		lineFrom + parsed.dialogueFrom,
-		Decoration.replace({
-			widget: new InlineTextWidget(parsed.character.name, "character-label"),
-		}),
-	);
-
-	addDialogueTextDecorations(builder, lineFrom, parsed, options.thought);
+		Decoration.line({ class: lineClasses.join(" "), attributes }));
+	addNameplate(builder, lineFrom, parsed, isNameActive);
+	decorateText(builder, lineFrom, parsed);
 }
 
 function buildDecorations(view: EditorView, settings: NameDialogueSettings): DecorationSet {
@@ -178,51 +172,38 @@ function buildDecorations(view: EditorView, settings: NameDialogueSettings): Dec
 
 		while (position <= visibleRange.to) {
 			const line = view.state.doc.lineAt(position);
-			const parsed = parseDialogueLine(line.text, regex, settings.characters);
+			const parsed = parseSource(line.text, regex, settings.characters);
 
 			if (parsed) {
-				const options = resolveNamespaces(parsed.namespaces);
+				const options = getNamespaces(parsed.namespaces);
 				if (options) {
-					addDialogueDecorations(builder, line.from, parsed, options);
+					addDecorations(
+						builder,
+						line.from,
+						parsed,
+						options,
+						isNameSelected(view, line.from, parsed),
+					);
 				} else {
 					builder.add(
 						line.from,
 						line.from,
-						Decoration.line({ class: "dialogue-invalid" }),
-					);
-				}
-			}
-
+						Decoration.line({ class: "invalid-namespace" }))}}
 			if (line.to >= visibleRange.to) break;
-			position = line.to + 1;
-		}
-	}
-
+			position = line.to + 1 }}
 	return builder.finish();
 }
 
-export function createDialogueExtension(getSettings: () => NameDialogueSettings) {
+export function createView(getSettings: () => NameDialogueSettings) {
 	return ViewPlugin.fromClass(
 		class {
 			decorations: DecorationSet;
-
-			constructor(view: EditorView) {
-				this.decorations = buildDecorations(view, getSettings());
-			}
-
+			constructor(view: EditorView) { this.decorations = buildDecorations(view, getSettings()) }
 			update(update: ViewUpdate): void {
-				if (
-					update.docChanged
+				if (update.docChanged
 					|| update.viewportChanged
 					|| update.selectionSet
 					|| update.geometryChanged
-				) {
-					this.decorations = buildDecorations(update.view, getSettings());
-				}
-			}
-		},
-		{
-			decorations: (plugin) => plugin.decorations,
-		},
-	);
+				) { this.decorations = buildDecorations(update.view, getSettings()) }}},
+		{ decorations: (plugin) => plugin.decorations });
 }

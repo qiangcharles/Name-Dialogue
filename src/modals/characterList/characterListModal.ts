@@ -3,7 +3,7 @@ import type { App } from "obsidian";
 import type { Character } from "../../types";
 import { CharacterListEditor } from "./characterListEditor";
 import { DiscardChangesModal } from "./discardChangesModal";
-import { validateCharacters } from "../../characters";
+import { validateCharacter } from "../../characters";
 
 export class CharacterListModal extends Modal {
 	constructor(
@@ -29,7 +29,7 @@ export class CharacterListModal extends Modal {
 			!character.name.trim())) {
 			new Notice("Character name cannot be blank or spaces."); return
 		}
-		const validationError = validateCharacters(this.characters);
+		const validationError = validateCharacter(this.characters);
 		if (validationError) {
 			new Notice(validationError);
 			return;

@@ -1,0 +1,127 @@
+/* Box */
+
+.dialogue-box { /* Base style */
+	position: relative;
+	box-sizing: border-box;
+	margin: 0.8rem 0;
+	--border-colour: color-mix(
+		in srgb,
+		var(--character-colour) 55%,
+		var(--background-modifier-border)
+	);
+	border: 1.5px solid var(--border-colour);
+	border-radius: 12px;
+	background: color-mix(
+		in srgb,
+		var(--character-colour) 11%,
+		var(--background-primary)
+	);
+	line-height: 1.45;
+	overflow: visible;
+}
+
+.cm-editor .cm-line.dialogue-box {
+	padding: 0.5rem 1rem;
+}
+
+.cm-editor .cm-content:has(.dialogue-box) {
+	min-width: 100%;
+}
+
+.cm-editor .cm-line.dialogue-line-left,
+.cm-editor .cm-line.dialogue-line-right {
+	width: fit-content;
+	max-width: 80%;
+	margin-left: 0;
+	margin-right: 0;
+	left: 0;
+	transform: none;
+}
+
+.cm-editor .cm-line.dialogue-line-right {
+	left: 100%;
+	transform: translateX(-100%);
+}
+
+/* Variant styles */
+
+.dialogue-style-thought { /* Overrides the .dialogue-box to change border style, radius, and tint */
+	border-style: dashed;
+	border-radius: 18px;
+	background: color-mix(
+		in srgb,
+		var(--character-colour) 9%,
+		var(--background-primary)
+	);
+	font-style: italic;
+}
+
+/* Wrappers */
+
+.dialogue-has-content::before,
+.dialogue-has-content::after {
+	color: var(--character-colour);
+	opacity: 80%;
+	font-weight: 700;
+	padding: 0 0.1rem;
+}
+
+.dialogue-style-speech.dialogue-has-content::before,
+.dialogue-style-speech.dialogue-has-content::after {
+	content: '"';
+}
+
+.dialogue-style-thought.dialogue-has-content::before {
+	content: "(";
+}
+
+.dialogue-style-thought.dialogue-has-content::after {
+	content: ")";
+}
+
+/* Text */
+
+.dialogue-text {
+	color: var(--text-normal);
+	font-weight: 400;
+}
+
+/* Nameplate */
+
+.character-nameplate {
+	position: absolute;
+	top: 0;
+	left: 1rem;
+	z-index: 1;
+	padding: 0.12rem 0.4rem;
+	color: var(--text-normal);
+	background: var(--border-colour);
+	font-size: 0.7em;
+	font-weight: 650;
+	line-height: 1.15;
+	white-space: nowrap;
+	border-radius: 4px;
+	transform: translateY(-50%);
+}
+
+.dialogue-source-hidden {
+	color: transparent;
+	font-size: 0;
+}
+
+.character-nameplate-active { /* When editing the name of the character */
+	font-size: 1em;
+}
+
+.dialogue-name-active .dialogue-text,
+.dialogue-name-active.dialogue-has-content::before,
+.dialogue-name-active.dialogue-has-content::after {
+	font-size: 0.85em;
+	opacity: 50%;
+}
+
+/* Invalid source */
+
+.invalid-namespace {
+	color: var(--text-error);
+}

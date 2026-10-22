@@ -41,9 +41,20 @@ const context = await esbuild.context({
 	minify: prod,
 });
 
+const stylesContext = await esbuild.context({
+	entryPoints: ['src/css/index.css'],
+	bundle: true,
+	logLevel: 'info',
+	outfile: 'styles.css',
+	minify: prod,
+	banner: {
+		css: '/* styles.css is generated from the .css files in /src/css/. */',
+	},
+});
+
 if (prod) {
-	await context.rebuild();
+	await Promise.all([context.rebuild(), stylesContext.rebuild()]);
 	process.exit(0);
 } else {
-	await context.watch();
+	await Promise.all([context.watch(), stylesContext.watch()]);
 }

@@ -21,20 +21,6 @@ export class CharacterListEditor {
 				this.render(container);
 			});
 
-		/*
-		const addButton = container.createEl("button", { text: "Add character" })
-		addButton.addEventListener("click", () => {
-			this.characters.push({
-				id: this.nextCharacterId(),
-				name: "",
-				aliases: [],
-				colour: "#676767"
-			});
-			container.empty();
-			this.render(container);
-		});
-		*/
-
 		// Empty list handling
 		if (this.characters.length === 0) {
 			container.createEl("p", { text: "No characters exist yet." });
