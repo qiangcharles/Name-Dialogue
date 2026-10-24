@@ -7,17 +7,16 @@ export function characterListCard(container: HTMLElement,
 								  character: Character,
 								  characterCount: number,
 								  onDelete: () => void,
-								  onMove: (direction: -1 | 1) => void): void {
+								  onMove: (direction: -1 | 1) => void,
+								  onChange: () => void): void {
 
-	// Rendering of the characterList card for the editor; adds element by calling card:HTMLDivElement
 	const card: HTMLDivElement = container.createDiv({ cls: "character-card" });
 	const row = card.createDiv({ cls: "character-card-fields" })
 
-	// Render fields first, then controls
 	const nameControls: HTMLDivElement = row.createDiv({ cls: "card-name-field" });
 	new TextComponent(nameControls).setPlaceholder("Name")
 		.setValue(character.name)
-		.onChange((value) => { character.name = value });
+		.onChange((value) => { character.name = value; onChange() });
 
 	const aliasControls: HTMLDivElement = row.createDiv({ cls: "card-alias-field" });
 	new TextComponent(aliasControls).setPlaceholder("Alias 1, alias 2...")
@@ -25,7 +24,7 @@ export function characterListCard(container: HTMLElement,
 		.onChange((value) => { character.aliases = value
 			.split(", ")
 			.map((alias) => alias
-				.trim()).filter(Boolean) }); // filter(Boolean) handles empty string aliases
+				.trim()).filter(Boolean); onChange() }); // filter(Boolean) handles empty string aliases
 
 	const cardColourControls = row.createDiv({ cls: "character-colour-ctrl" });
 	const hexInput = new TextComponent(cardColourControls)
@@ -35,10 +34,12 @@ export function characterListCard(container: HTMLElement,
 		.setValue(character.colour);
 	hexInput.onChange((value) => {
 		character.colour = value;
-		if (validateHexColour(value)) { picker.setValue(value) }});
+		if (validateHexColour(value)) { picker.setValue(value) }
+		onChange() });
 	picker.onChange((value) => {
 		character.colour = value;
-		if (validateHexColour(value)) { hexInput.setValue(value) }});
+		if (validateHexColour(value)) { hexInput.setValue(value) }
+		onChange() });
 
 	const cardControls = row.createDiv({ cls: "character-card-ctrl" });
 	new ButtonComponent(cardControls).setIcon("arrow-up").setTooltip("Move up")
@@ -50,5 +51,4 @@ export function characterListCard(container: HTMLElement,
 	new ButtonComponent(cardControls).setIcon("trash").setTooltip("Delete")
 		.setDestructive()
 		.onClick(onDelete);
-
 }
