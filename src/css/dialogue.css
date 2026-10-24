@@ -104,18 +104,13 @@
 	transform: translateY(-50%);
 }
 
-.dialogue-source-hidden {
-	color: transparent;
-	font-size: 0;
-}
-
-.character-nameplate-active { /* When editing the name of the character */
+.character-nameplate-active { /* When editing the namespace */
 	font-size: 1em;
 }
 
-.dialogue-name-active .dialogue-text,
-.dialogue-name-active.dialogue-has-content::before,
-.dialogue-name-active.dialogue-has-content::after {
+.dialogue-namespace-active .dialogue-text,
+.dialogue-namespace-active.dialogue-has-content::before,
+.dialogue-namespace-active.dialogue-has-content::after {
 	font-size: 0.85em;
 	opacity: 50%;
 }

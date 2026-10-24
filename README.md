@@ -22,11 +22,13 @@ Keep in mind: this is a very informal way of writing scripts. For those interest
   - Lists characters in a row
 - The namespace format regex parses the following:
   - `[name]:[options]:[dialogue]`
+    - `[name]:[options]:` can be generally thought of as `[namespace]:`
   - The default options are: `thought` and `right`
+- In the editor, selecting the `[namespace]:` reveals the original text for editing, including any alias used in the source
 - Dialogue wrappers (speech quotes and thought parentheses) are added by the plugin; wrapper characters typed in the dialogue remain visible as regular dialogue text on purpose, if you like to use those characters for emphasis
 
 ## Planned functionality
-- 
+- Fancier colours/style editing for names and boxes
 - [`./settings.ts`](src/settings.ts)
   - Editable namespace/parsing regex for dialogue
 - [`./modals/characterList`](src/modals/characterList)

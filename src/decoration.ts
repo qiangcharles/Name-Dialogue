@@ -55,16 +55,16 @@ function getNamespaces(namespaces: readonly string[]): NamespaceOptions | null {
 
 function hasWrappers(parsed: ParsedDialogue): boolean { return parsed.dialogueFrom < parsed.dialogueTo }
 
-function isNameSelected(view: EditorView,
-						lineFrom: number,
-						parsed: ParsedDialogue): boolean {
-	const nameFrom = lineFrom + parsed.nameFrom;
-	const nameTo = lineFrom + parsed.nameTo;
+function namespaceSelected(view: EditorView,
+						   lineFrom: number,
+						   parsed: ParsedDialogue): boolean {
+	const namespaceStart = lineFrom + parsed.namespaceStart;
+	const namespaceEnd = lineFrom + parsed.namespaceEnd;
 
 	return view.state.selection.ranges.some(({ from, to }) =>
 		from === to
-			? from >= nameFrom && from <= nameTo
-			: from < nameTo && to > nameFrom,
+			? from >= namespaceStart && from <= namespaceEnd
+			: from < namespaceEnd && to > namespaceStart,
 	);
 }
 
@@ -108,8 +108,8 @@ function decorateText(builder: RangeSetBuilder<Decoration>,
 function addNameplate(builder: RangeSetBuilder<Decoration>,
 						 lineFrom: number,
 						 parsed: ParsedDialogue,
-						 isNameActive: boolean): void {
-	if (!isNameActive) {
+						 isNamespaceActive: boolean): void {
+	if (!isNamespaceActive) {
 		builder.add(
 			lineFrom,
 			lineFrom + parsed.dialogueFrom,
@@ -120,35 +120,26 @@ function addNameplate(builder: RangeSetBuilder<Decoration>,
 		return;
 	}
 
-	const nameFrom = lineFrom + parsed.nameFrom;
-	const nameTo = lineFrom + parsed.nameTo;
-	const prefixTo = lineFrom + parsed.dialogueFrom;
-	const hiddenText = Decoration.mark({ class: "dialogue-source-hidden" });
-
-	if (lineFrom < nameFrom) {
-		builder.add(lineFrom, nameFrom, hiddenText);
-	}
+	const namespaceStart = lineFrom + parsed.namespaceStart;
+	const namespaceEnd = lineFrom + parsed.namespaceEnd;
 	builder.add(
-		nameFrom,
-		nameTo,
+		namespaceStart,
+		namespaceEnd,
 		Decoration.mark({ class: "character-nameplate character-nameplate-active" }),
 	);
-	if (nameTo < prefixTo) {
-		builder.add(nameTo, prefixTo, hiddenText);
-	}
 }
 
 function addDecorations(builder: RangeSetBuilder<Decoration>,
 						lineFrom: number,
 						parsed: ParsedDialogue,
 						options: NamespaceOptions,
-						isNameActive: boolean): void {
+						isNamespaceActive: boolean): void {
 	const showWrappers = hasWrappers(parsed);
 	const lineClasses = ["dialogue-box",
 		options.thought ? "dialogue-style-thought" : "dialogue-style-speech"];
 	if (showWrappers) lineClasses.push("dialogue-has-content");
 	lineClasses.push(`dialogue-line-${options.alignment ?? "left"}`);
-	if (isNameActive) lineClasses.push("dialogue-name-active");
+	if (isNamespaceActive) lineClasses.push("dialogue-namespace-active");
 
 	const attributes: Record<string, string> = {
 		style: `--character-colour: ${parsed.character.colour};`,
@@ -159,7 +150,7 @@ function addDecorations(builder: RangeSetBuilder<Decoration>,
 		lineFrom,
 		lineFrom,
 		Decoration.line({ class: lineClasses.join(" "), attributes }));
-	addNameplate(builder, lineFrom, parsed, isNameActive);
+	addNameplate(builder, lineFrom, parsed, isNamespaceActive);
 	decorateText(builder, lineFrom, parsed);
 }
 
@@ -182,7 +173,7 @@ function buildDecorations(view: EditorView, settings: NameDialogueSettings): Dec
 						line.from,
 						parsed,
 						options,
-						isNameSelected(view, line.from, parsed),
+						namespaceSelected(view, line.from, parsed),
 					);
 				} else {
 					builder.add(
