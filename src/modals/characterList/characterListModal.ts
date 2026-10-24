@@ -30,30 +30,43 @@ export class CharacterListModal extends Modal {
 		return hasChanges
 	}
 
-	private async saveCharacters(): Promise<void> {
+	private async saveCharacters(): Promise<boolean> {
 		if (this.characters.some((character) =>
 			!character.name.trim())) {
-			new Notice("Character name cannot be blank or spaces."); return
+			new Notice("Character name cannot be blank or spaces.");
+			return false
 		}
 		const validationError = validateCharacter(this.characters);
 		if (validationError) {
 			new Notice(validationError);
-			return;
-		} try {
+			return false;
+		}
+		try {
 			await this.onSave(this.characters)
 			this.previousCharacters = JSON.stringify(this.characters)
 			this.hasUnsavedChanges()
+			return true
 		} catch (error) {
 			new Notice(error instanceof Error ? error.message : "Unable to save characters.");
 			console.error("[name-dialogue]", error);
-			return;
+			return false;
 		}
 	}
 
 	override close(): void {
 		if (this.hasUnsavedChanges() && !this.discardConfirmed) {
-			new DiscardChangesModal(this.app, () => {
-				this.discardConfirmed = true; this.close()}).open(); return } super.close()
+			new DiscardChangesModal(
+				this.app,
+				() => {
+					this.discardConfirmed = true;
+					this.close();
+				},
+				() => this.saveCharacters(),
+				() => this.close(),
+			).open();
+			return;
+		}
+		super.close()
 	}
 
 	onOpen(): void {
