@@ -12,8 +12,8 @@ interface SourceMatch {
 }
 
 interface SourceOffsets {
-	nameFrom: number;
-	nameTo: number;
+	namespaceStart: number;
+	namespaceEnd: number;
 	dialogueFrom: number;
 	dialogueTo: number;
 	rawDialogue: string;
@@ -24,8 +24,8 @@ export interface ParsedDialogue {
 	namespaces: string[];
 	rawDialogue: string;
 	dialogue: string;
-	nameFrom: number;
-	nameTo: number;
+	namespaceStart: number;
+	namespaceEnd: number;
 	dialogueFrom: number;
 	dialogueTo: number;
 	escapedColonOffsets: number[];
@@ -76,15 +76,14 @@ function getSourceOffsets(
 ): SourceOffsets {
 	const rawDialogueGroup = groups.dialogue;
 	const nameOffset = match[0].indexOf(groups.name);
-	const nameFrom = match.index + nameOffset;
-	const nameTo = nameFrom + groups.name.length;
+	const namespaceStart = match.index + nameOffset;
 	const prefixEnd = match.index + match[0].length - rawDialogueGroup.length;
 	const leadingWhitespace = rawDialogueGroup.length - rawDialogueGroup.trimStart().length;
 	const trailingWhitespace = rawDialogueGroup.length - rawDialogueGroup.trimEnd().length;
 	const dialogueFrom = prefixEnd + leadingWhitespace;
 	const dialogueTo = match.index + match[0].length - trailingWhitespace;
 	const rawDialogue = line.slice(dialogueFrom, dialogueTo);
-	return { nameFrom, nameTo, dialogueFrom, dialogueTo, rawDialogue };
+	return { namespaceStart, namespaceEnd: prefixEnd, dialogueFrom, dialogueTo, rawDialogue };
 }
 
 function getEscapedColonOffsets(rawDialogue: string, dialogueFrom: number): number[] {
@@ -121,8 +120,8 @@ export function parseSource(
 		namespaces,
 		rawDialogue: offsets.rawDialogue,
 		dialogue: offsets.rawDialogue.replace(/::/g, ":"), // colon escape
-		nameFrom: offsets.nameFrom,
-		nameTo: offsets.nameTo,
+		namespaceStart: offsets.namespaceStart,
+		namespaceEnd: offsets.namespaceEnd,
 		dialogueFrom: offsets.dialogueFrom,
 		dialogueTo: offsets.dialogueTo,
 		escapedColonOffsets,

@@ -1,5 +1,5 @@
 import { Modal, Notice, Setting } from "obsidian";
-import type { App } from "obsidian";
+import type { App, ButtonComponent } from "obsidian";
 import type { Character } from "../../types";
 import { CharacterListEditor } from "./characterListEditor";
 import { DiscardChangesModal } from "./discardChangesModal";
@@ -17,50 +17,75 @@ export class CharacterListModal extends Modal {
 		this.previousCharacters = JSON.stringify(this.characters)
 	}
 
-	// Edit check for save/close checks
 	private previousCharacters = ""
 	private discardConfirmed = false
+	private saveButton: ButtonComponent | null = null
 	private hasUnsavedChanges(): boolean {
-		return JSON.stringify(this.characters) !== this.previousCharacters
+		const hasChanges = JSON.stringify(this.characters) !== this.previousCharacters
+		if (hasChanges) {
+			this.saveButton?.setCta()
+		} else {
+			this.saveButton?.removeCta()
+		}
+		return hasChanges
 	}
 
-	private async saveCharacters(): Promise<void> {
+	private async saveCharacters(): Promise<boolean> {
 		if (this.characters.some((character) =>
 			!character.name.trim())) {
-			new Notice("Character name cannot be blank or spaces."); return
+			new Notice("Character name cannot be blank or spaces.");
+			return false
 		}
 		const validationError = validateCharacter(this.characters);
 		if (validationError) {
 			new Notice(validationError);
-			return;
-		} try {
+			return false;
+		}
+		try {
 			await this.onSave(this.characters)
 			this.previousCharacters = JSON.stringify(this.characters)
+			this.hasUnsavedChanges()
+			return true
 		} catch (error) {
 			new Notice(error instanceof Error ? error.message : "Unable to save characters.");
 			console.error("[name-dialogue]", error);
-			return;
+			return false;
 		}
 	}
 
 	override close(): void {
 		if (this.hasUnsavedChanges() && !this.discardConfirmed) {
-			new DiscardChangesModal(this.app, () => {
-				this.discardConfirmed = true; this.close()}).open(); return } super.close()
+			new DiscardChangesModal(
+				this.app,
+				() => {
+					this.discardConfirmed = true;
+					this.close();
+				},
+				() => this.saveCharacters(),
+				() => this.close(),
+			).open();
+			return;
+		}
+		super.close()
 	}
 
 	onOpen(): void {
 		this.modalEl.classList.add("character-list-modal");
 		this.setTitle("Characters");
-		new CharacterListEditor(this.characters).render(this.contentEl.createDiv())
+		new CharacterListEditor(this.characters, () => {
+			this.hasUnsavedChanges()
+		})
+			.render(this.contentEl.createDiv())
 		const actions = new Setting(this.contentEl);
 
 		actions.addButton((button) =>
 			button.setButtonText("Close").onClick(() =>
 				this.close()))
 
-		actions.addButton((button) =>
+		actions.addButton((button) => {
+			this.saveButton = button
 			button.setButtonText("Save").onClick(() =>
-				void this.saveCharacters()))
+				void this.saveCharacters())
+		})
 	}
 }

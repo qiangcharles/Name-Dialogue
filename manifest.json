@@ -1,7 +1,7 @@
 {
 	"id": "name-dialogue",
 	"name": "Name Dialogue",
-	"version": "2.0.1",
+	"version": "2.1.0",
 	"minAppVersion": "1.13.0",
 	"description": "Decorate dialogue in scripts.",
 	"author": "Charles Qiang",

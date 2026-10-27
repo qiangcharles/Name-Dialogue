@@ -1,5 +1,5 @@
 # Name Dialogue
-### Version 2.0.1
+### Version 2.1
 `name-dialogue` is a barebones Obsidian plugin that formats dialogue to be a bit more visually appealing. It gets its name from the way I write my scripts. For example:
 ```
 Alice and Bob meet at a park.
@@ -17,16 +17,19 @@ Keep in mind: this is a very informal way of writing scripts. For those interest
 ## Current functionality
 - Editing, creating, renaming, colouring characters are done through the [characterList](src/modals/characterList) modal
   - You're able to save your characters' names, set their aliases, set a colour, and rearrange them
-  - Editor window prompts for confirmation when exiting; doesn't immediately save on edit
+  - Unsaved changes are indicated by the save button changing colour
+  - Exiting with unsaved changes will prompt for confirmation
   - Resizes appropriately, according to viewport size
-  - Lists characters in a row
+  - Lists characters as rows in a single column
 - The namespace format regex parses the following:
   - `[name]:[options]:[dialogue]`
+    - `[name]:[options]:` can be generally thought of as `[namespace]:`
   - The default options are: `thought` and `right`
+- In the editor, selecting the `[namespace]:` reveals the original text for editing, including any alias used in the source
 - Dialogue wrappers (speech quotes and thought parentheses) are added by the plugin; wrapper characters typed in the dialogue remain visible as regular dialogue text on purpose, if you like to use those characters for emphasis
 
 ## Planned functionality
-- 
+- Fancier colours/style editing for names and boxes
 - [`./settings.ts`](src/settings.ts)
   - Editable namespace/parsing regex for dialogue
 - [`./modals/characterList`](src/modals/characterList)
