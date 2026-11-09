@@ -59,7 +59,7 @@
 	top: var(--decorator-vertical-gap, 1.2rem);
 }
 
-.cm-editor .cm-content:has(.dialogue-box) {
+.cm-editor .cm-content.dialogue-content {
 	min-width: 100%;
 }
 

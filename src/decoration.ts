@@ -12,6 +12,11 @@ interface NamespaceOptions {
 	nameMode?: "full";
 }
 
+interface BuiltDecorations {
+	decorations: DecorationSet;
+	hasDialogue: boolean;
+}
+
 const refreshDecorationsEffect = StateEffect.define<null>();
 const activeViews = new Set<EditorView>();
 
@@ -173,9 +178,10 @@ function addDecorations(builder: RangeSetBuilder<Decoration>,
 	decorateText(builder, lineFrom, parsed);
 }
 
-function buildDecorations(view: EditorView, settings: NameDialogueSettings): DecorationSet {
+function buildDecorations(view: EditorView, settings: NameDialogueSettings): BuiltDecorations {
 	const builder = new RangeSetBuilder<Decoration>();
 	const regex = new RegExp(settings.namespaceRegex);
+	let hasDialogue = false;
 
 	for (const visibleRange of view.visibleRanges) {
 		let position = visibleRange.from;
@@ -187,6 +193,7 @@ function buildDecorations(view: EditorView, settings: NameDialogueSettings): Dec
 			if (parsed) {
 				const options = getNamespaces(parsed.namespaces);
 				if (options) {
+					hasDialogue = true;
 					addDecorations(
 						builder,
 						line.from,
@@ -202,18 +209,23 @@ function buildDecorations(view: EditorView, settings: NameDialogueSettings): Dec
 						Decoration.line({ class: "invalid-namespace" }))}}
 			if (line.to >= visibleRange.to) break;
 			position = line.to + 1 }}
-	return builder.finish();
+	return { decorations: builder.finish(), hasDialogue };
 }
 
 export function createView(getSettings: () => NameDialogueSettings) {
 	return ViewPlugin.fromClass(
 		class {
-			decorations: DecorationSet;
+			decorations!: DecorationSet;
 			private view: EditorView;
+			private updateDecorations(view: EditorView): void {
+				const built = buildDecorations(view, getSettings());
+				view.contentDOM.classList.toggle("dialogue-content", built.hasDialogue);
+				this.decorations = built.decorations;
+			}
 			constructor(view: EditorView) {
 				this.view = view;
 				activeViews.add(view);
-				this.decorations = buildDecorations(view, getSettings());
+				this.updateDecorations(view);
 			}
 			update(update: ViewUpdate): void {
 				const settingsChanged = update.transactions.some((transaction) =>
@@ -224,10 +236,11 @@ export function createView(getSettings: () => NameDialogueSettings) {
 					|| update.selectionSet
 					|| update.geometryChanged
 					|| settingsChanged
-				) { this.decorations = buildDecorations(update.view, getSettings()) }
+				) { this.updateDecorations(update.view) }
 			}
 			destroy(): void {
 				activeViews.delete(this.view);
+				this.view.contentDOM.classList.remove("dialogue-content");
 			}
 		},
 		{ decorations: (plugin) => plugin.decorations });
