@@ -3,17 +3,17 @@
 .dialogue-box { /* Base style */
 	position: relative;
 	box-sizing: border-box;
-	margin: 0.8rem 0;
+	margin: var(--decorator-vertical-gap, 1.2rem) 0 0;
 	--border-colour: color-mix(
 		in srgb,
 		var(--character-colour) 55%,
 		var(--background-modifier-border)
 	);
-	border: 1.5px solid var(--border-colour);
-	border-radius: 12px;
+	border: var(--decorator-border-thickness, 1.5px) solid var(--border-colour);
+	border-radius: var(--decorator-box-radius, 12px);
 	background: color-mix(
 		in srgb,
-		var(--character-colour) 11%,
+		var(--character-colour) var(--decorator-fill-opacity, 11%),
 		var(--background-primary)
 	);
 	line-height: 1.45;
@@ -21,7 +21,42 @@
 }
 
 .cm-editor .cm-line.dialogue-box {
-	padding: 0.5rem 1rem;
+	isolation: isolate;
+	margin-block: 0;
+	padding: calc(0.5rem + var(--decorator-vertical-gap, 1.2rem)) 1rem 0.5rem;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+}
+
+.cm-editor .cm-line.dialogue-box::before {
+	position: absolute;
+	z-index: -1;
+	inset-block: var(--decorator-vertical-gap, 1.2rem) 0;
+	inset-inline: 0;
+	border: var(--decorator-border-thickness, 1.5px) solid var(--border-colour);
+	border-radius: var(--decorator-box-radius, 12px);
+	background: color-mix(
+		in srgb,
+		var(--character-colour) var(--decorator-fill-opacity, 11%),
+		var(--background-primary)
+	);
+	content: "";
+	pointer-events: none;
+}
+
+.cm-editor .cm-line.dialogue-box.decorator-thought::before {
+	border-style: dashed;
+	border-radius: var(--decorator-box-radius, 18px);
+	background: color-mix(
+		in srgb,
+		var(--character-colour) var(--decorator-fill-opacity, 9%),
+		var(--background-primary)
+	);
+}
+
+.cm-editor .cm-line.dialogue-box .character-nameplate {
+	top: var(--decorator-vertical-gap, 1.2rem);
 }
 
 .cm-editor .cm-content:has(.dialogue-box) {
@@ -45,38 +80,54 @@
 
 /* Variant styles */
 
-.dialogue-style-thought { /* Overrides the .dialogue-box to change border style, radius, and tint */
+.decorator-thought { /* Overrides the .dialogue-box to change border style, radius, and tint */
 	border-style: dashed;
-	border-radius: 18px;
+	border-radius: var(--decorator-box-radius, 18px);
 	background: color-mix(
 		in srgb,
-		var(--character-colour) 9%,
+		var(--character-colour) var(--decorator-fill-opacity, 9%),
 		var(--background-primary)
 	);
+}
+
+.dialogue-style-thought {
 	font-style: italic;
 }
 
 /* Wrappers */
 
 .dialogue-has-content::before,
-.dialogue-has-content::after {
+.dialogue-has-content::after,
+.dialogue-text-start::before,
+.dialogue-text-end::after {
 	color: var(--character-colour);
 	opacity: 80%;
 	font-weight: 700;
 	padding: 0 0.1rem;
 }
 
-.dialogue-style-speech.dialogue-has-content::before,
-.dialogue-style-speech.dialogue-has-content::after {
+.decorator-default.dialogue-has-content::before,
+.decorator-default.dialogue-has-content::after,
+.dialogue-style-default.dialogue-text-start::before,
+.dialogue-style-default.dialogue-text-end::after {
 	content: '"';
 }
 
-.dialogue-style-thought.dialogue-has-content::before {
+.decorator-thought.dialogue-has-content::before,
+.dialogue-style-thought.dialogue-text-start::before {
 	content: "(";
 }
 
-.dialogue-style-thought.dialogue-has-content::after {
+.decorator-thought.dialogue-has-content::after,
+.dialogue-style-thought.dialogue-text-end::after {
 	content: ")";
+}
+
+.dialogue-style-thought.dialogue-text-start::before,
+.dialogue-style-thought.dialogue-text-end::after,
+.decorator-thought.dialogue-has-content::before,
+.decorator-thought.dialogue-has-content::after {
+	font-style: italic;
 }
 
 /* Text */
@@ -108,6 +159,8 @@
 }
 
 .dialogue-namespace-active .dialogue-text,
+.dialogue-namespace-active .dialogue-text-start::before,
+.dialogue-namespace-active .dialogue-text-end::after,
 .dialogue-namespace-active.dialogue-has-content::before,
 .dialogue-namespace-active.dialogue-has-content::after {
 	font-size: 0.85em;

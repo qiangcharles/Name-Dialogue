@@ -40,7 +40,7 @@ function createNameplate(character: Character): HTMLSpanElement {
 
 function createDialogueText(dialogue: string, isThought: boolean): HTMLSpanElement {
 	const text = document.createSpan();
-	text.className = "dialogue-text";
+	text.className = `dialogue-text dialogue-style-${isThought ? "thought" : "default"}`;
 
 	const content = isThought
 		? stripWrapper(dialogue, "(", ")")
@@ -53,8 +53,8 @@ function createDialogueText(dialogue: string, isThought: boolean): HTMLSpanEleme
 function createDialogueBox(parsed: ParsedDialogue): HTMLDivElement {
 	const isThought = parsed.namespaces.includes("thought");
 	const dialogueBox = document.createDiv();
-	dialogueBox.className = `dialogue-box dialogue-style-${isThought ? "thought" : "speech"}`;
-	dialogueBox.style.setProperty("--character-colour", parsed.character.colour);
+	dialogueBox.className = `dialogue-box decorator-${isThought ? "thought" : "default"}`;
+	dialogueBox.setCssProps({ "--character-colour": parsed.character.colour });
 	dialogueBox.append(
 		createNameplate(parsed.character),
 		createDialogueText(parsed.dialogue, isThought),
@@ -62,6 +62,7 @@ function createDialogueBox(parsed: ParsedDialogue): HTMLDivElement {
 	return dialogueBox;
 }
 
+// to be used for reading mode later on
 export function renderDialogue(sectionEl: HTMLElement,
 							   context: MarkdownPostProcessorContext,
 							   regex: RegExp,

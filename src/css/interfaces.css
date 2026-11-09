@@ -32,3 +32,44 @@
 	align-items: center;
 	gap: 0.25rem;
 }
+
+/* Dialogue decorator editor */
+
+.modal.decorator-customization-modal {
+	width: min(42rem, calc(100vw - 2rem));
+}
+
+.decorator-previews {
+	display: flex;
+	gap: 1rem;
+	overflow-x: auto;
+	padding: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.decorator-option {
+	display: block;
+	flex: 0 0 auto;
+	min-height: 5rem;
+	outline: none;
+	cursor: pointer;
+}
+
+.decorator-option[aria-pressed="true"] .dialogue-box {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 4px;
+}
+
+.decorator-option:focus-visible .dialogue-box {
+	outline: 2px dashed var(--interactive-accent);
+	outline-offset: 4px;
+}
+
+.decorator-option .dialogue-box {
+	box-sizing: border-box;
+	width: 9rem;
+	min-height: 3.25rem;
+	margin-top: 0.75rem;
+	padding: 0.4rem 0.5rem;
+	text-align: left;
+}

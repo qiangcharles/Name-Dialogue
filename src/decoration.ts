@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies -- Obsidian supplies CodeMirror and esbuild externalizes it.
-import { RangeSetBuilder } from "@codemirror/state";
+import { RangeSetBuilder, StateEffect } from "@codemirror/state";
 // eslint-disable-next-line import/no-extraneous-dependencies -- Obsidian supplies CodeMirror and esbuild externalizes it.
 import { Decoration, ViewPlugin, WidgetType } from "@codemirror/view";
 import type { DecorationSet, EditorView, ViewUpdate } from "@codemirror/view";
@@ -11,6 +11,9 @@ interface NamespaceOptions {
 	alignment?: "right";
 	nameMode?: "full";
 }
+
+const refreshDecorationsEffect = StateEffect.define<null>();
+const activeViews = new Set<EditorView>();
 
 class InlineTextWidget extends WidgetType { // CodeMirror
 	constructor(private readonly text: string,
@@ -53,7 +56,11 @@ function getNamespaces(namespaces: readonly string[]): NamespaceOptions | null {
 	return options;
 }
 
-function hasWrappers(parsed: ParsedDialogue): boolean { return parsed.dialogueFrom < parsed.dialogueTo }
+export function refreshDialogueDecorations(): void {
+	for (const view of [...activeViews]) {
+		view.dispatch({ effects: refreshDecorationsEffect.of(null) });
+	}
+}
 
 function namespaceSelected(view: EditorView,
 						   lineFrom: number,
@@ -73,6 +80,9 @@ function decorateText(builder: RangeSetBuilder<Decoration>,
 					  parsed: ParsedDialogue): void {
 	const dialogueFrom = lineFrom + parsed.dialogueFrom;
 	const dialogueTo = lineFrom + parsed.dialogueTo;
+	const isThought = parsed.namespaces.includes("thought");
+	const textStyle = isThought ? "dialogue-style-thought" : "dialogue-style-default";
+	const chunks: { from: number; to: number; isEscapedColon: boolean }[] = [];
 	let contentFrom = dialogueFrom;
 	for (const escapedColonOffset of parsed.escapedColonOffsets) {
 		const escapedColonFrom = lineFrom + escapedColonOffset;
@@ -80,29 +90,32 @@ function decorateText(builder: RangeSetBuilder<Decoration>,
 		if (escapedColonFrom < contentFrom || escapedColonTo > dialogueTo) continue;
 
 		if (contentFrom < escapedColonFrom) {
-			builder.add(
-				contentFrom,
-				escapedColonFrom,
-				Decoration.mark({ class: "dialogue-text" }),
-			);
+			chunks.push({ from: contentFrom, to: escapedColonFrom, isEscapedColon: false });
 		}
-		builder.add(
-			escapedColonFrom,
-			escapedColonTo,
-			Decoration.replace({
-				widget: new InlineTextWidget(":", "dialogue-text"),
-			}),
-		);
+		chunks.push({ from: escapedColonFrom, to: escapedColonTo, isEscapedColon: true });
 		contentFrom = escapedColonTo;
 	}
 
 	if (contentFrom < dialogueTo) {
-		builder.add(
-			contentFrom,
-			dialogueTo,
-			Decoration.mark({ class: "dialogue-text" }),
-		);
+		chunks.push({ from: contentFrom, to: dialogueTo, isEscapedColon: false });
 	}
+
+	chunks.forEach((chunk, index) => {
+		const classes = ["dialogue-text", textStyle];
+		if (index === 0) classes.push("dialogue-text-start");
+		if (index === chunks.length - 1) classes.push("dialogue-text-end");
+		const className = classes.join(" ");
+
+		builder.add(
+			chunk.from,
+			chunk.to,
+			chunk.isEscapedColon
+				? Decoration.replace({
+					widget: new InlineTextWidget(":", className),
+				})
+				: Decoration.mark({ class: className }),
+		);
+	});
 }
 
 function addNameplate(builder: RangeSetBuilder<Decoration>,
@@ -133,16 +146,22 @@ function addDecorations(builder: RangeSetBuilder<Decoration>,
 						lineFrom: number,
 						parsed: ParsedDialogue,
 						options: NamespaceOptions,
-						isNamespaceActive: boolean): void {
-	const showWrappers = hasWrappers(parsed);
+						isNamespaceActive: boolean,
+						settings: NameDialogueSettings): void {
+	const boxStyle = options.thought
+		? settings.decorators.thought
+		: settings.decorators.default;
 	const lineClasses = ["dialogue-box",
-		options.thought ? "dialogue-style-thought" : "dialogue-style-speech"];
-	if (showWrappers) lineClasses.push("dialogue-has-content");
+		options.thought ? "decorator-thought" : "decorator-default"];
 	lineClasses.push(`dialogue-line-${options.alignment ?? "left"}`);
 	if (isNamespaceActive) lineClasses.push("dialogue-namespace-active");
 
 	const attributes: Record<string, string> = {
-		style: `--character-colour: ${parsed.character.colour};`,
+		style: `--character-colour: ${parsed.character.colour}; `
+			+ `--decorator-vertical-gap: ${settings.decorators.verticalGap}rem; `
+			+ `--decorator-border-thickness: ${boxStyle.borderThickness}px; `
+			+ `--decorator-fill-opacity: ${boxStyle.fillOpacity}%; `
+			+ `--decorator-box-radius: ${boxStyle.cornerRadius}px;`,
 		"data-dialogue-type": options.thought ? "thought" : "speech" };
 	if (options.nameMode) attributes["data-name-mode"] = options.nameMode;
 
@@ -174,6 +193,7 @@ function buildDecorations(view: EditorView, settings: NameDialogueSettings): Dec
 						parsed,
 						options,
 						namespaceSelected(view, line.from, parsed),
+						settings,
 					);
 				} else {
 					builder.add(
@@ -189,12 +209,26 @@ export function createView(getSettings: () => NameDialogueSettings) {
 	return ViewPlugin.fromClass(
 		class {
 			decorations: DecorationSet;
-			constructor(view: EditorView) { this.decorations = buildDecorations(view, getSettings()) }
+			private view: EditorView;
+			constructor(view: EditorView) {
+				this.view = view;
+				activeViews.add(view);
+				this.decorations = buildDecorations(view, getSettings());
+			}
 			update(update: ViewUpdate): void {
+				const settingsChanged = update.transactions.some((transaction) =>
+					transaction.effects.some((effect) => effect.is(refreshDecorationsEffect)),
+				);
 				if (update.docChanged
 					|| update.viewportChanged
 					|| update.selectionSet
 					|| update.geometryChanged
-				) { this.decorations = buildDecorations(update.view, getSettings()) }}},
+					|| settingsChanged
+				) { this.decorations = buildDecorations(update.view, getSettings()) }
+			}
+			destroy(): void {
+				activeViews.delete(this.view);
+			}
+		},
 		{ decorations: (plugin) => plugin.decorations });
 }
