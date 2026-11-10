@@ -7,6 +7,7 @@ export default defineConfig(
 		'node_modules',
 		'dist',
 		'esbuild.config.mjs',
+		'vitest.config.mjs',
 		'version-bump.mjs',
 		'versions.json',
 		'main.js',
@@ -29,4 +30,10 @@ export default defineConfig(
 		},
 	},
 	...obsidianmd.configs.recommended,
+	{
+		files: ['tests/**/*.ts'],
+		rules: {
+			'obsidianmd/prefer-create-el': 'off',
+		},
+	},
 );

@@ -1,90 +1,92 @@
-import type { MarkdownPostProcessorContext } from "obsidian";
-import type { Character } from "./types";
-import { parseSource, type ParsedDialogue } from "./dialogue";
+import type { MarkdownPostProcessorContext } from "obsidian"
+import type { Character } from "./types"
+import { parseSource, type ParsedDialogue } from "./dialogue"
+import { resolveOptions, type DialogueOptions } from "./options"
 
 // Render per section
-export function getSourceLines(sectionEl: HTMLElement, context: MarkdownPostProcessorContext): string[] {
-	const section = context.getSectionInfo(sectionEl);
-	if (!section) return [];
-	return section.text.split(/\r?\n/).filter((line) => line.trim().length > 0);
+export function getSourceLines(sectionElement: HTMLElement, context: MarkdownPostProcessorContext): string[] {
+	const section = context.getSectionInfo(sectionElement)
+	if (!section) return []
+	return section.text.split(/\r?\n/).filter((line) => line.trim().length > 0)
 }
 
-function applyNamespace(namespace: string, line: HTMLElement): boolean {
-	switch (namespace) {
-		case "thought":
-			return true;
-		case "full":
-			line.dataset.nameMode = namespace;
-			return true;
-		case "right":
-			line.classList.add(`dialogue-line-${namespace}`);
-			return true;
-		default:
-			return false;
-	}
+function applyOptions(options: DialogueOptions, line: HTMLElement): void {
+	if (options.nameMode) line.dataset.nameMode = options.nameMode
+	if (options.alignment) line.classList.add(`dialogue-line-${options.alignment}`)
 }
 
 function stripWrapper(text: string, open: string, close: string): string {
-	const trimmed = text.trim();
+	const trimmed = text.trim()
 	return trimmed.startsWith(open) && trimmed.endsWith(close)
 		? trimmed.slice(open.length, trimmed.length - close.length)
-		: trimmed;
+		: trimmed
 }
 
 function createNameplate(character: Character): HTMLSpanElement {
-	const nameplate = document.createSpan();
-	nameplate.className = "character-nameplate";
-	nameplate.textContent = character.name;
-	return nameplate;
+	const nameplate = document.createSpan()
+	nameplate.className = "character-nameplate"
+	nameplate.textContent = character.name
+	return nameplate
 }
 
 function createDialogueText(dialogue: string, isThought: boolean): HTMLSpanElement {
-	const text = document.createSpan();
-	text.className = `dialogue-text dialogue-style-${isThought ? "thought" : "default"}`;
+	const text = document.createSpan()
+	const style = isThought ? "thought" : "default"
+	text.className = `dialogue-text text-style-${style}`
 
 	const content = isThought
 		? stripWrapper(dialogue, "(", ")")
-		: stripWrapper(dialogue, "\"", "\"");
-	text.textContent = isThought ? `(${content})` : `"${content}"`;
+		: stripWrapper(dialogue, "\"", "\"")
+	text.textContent = isThought ? `(${content})` : `"${content}"`
 
-	return text;
+	return text
 }
 
 function createDialogueBox(parsed: ParsedDialogue): HTMLDivElement {
-	const isThought = parsed.namespaces.includes("thought");
-	const dialogueBox = document.createDiv();
-	dialogueBox.className = `dialogue-box decorator-${isThought ? "thought" : "default"}`;
-	dialogueBox.setCssProps({ "--character-colour": parsed.character.colour });
+	const isThought = parsed.options.includes("thought")
+	const dialogueBox = document.createDiv()
+	dialogueBox.className = `dialogue-box decorator-${isThought ? "thought" : "default"}`
+	dialogueBox.setCssProps({ "--character-colour": parsed.character.colour })
 	dialogueBox.append(
 		createNameplate(parsed.character),
 		createDialogueText(parsed.dialogue, isThought),
-	);
-	return dialogueBox;
+	)
+	return dialogueBox
 }
 
 // to be used for reading mode later on
-export function renderDialogue(sectionEl: HTMLElement,
+export function renderDialogue(sectionElement: HTMLElement,
 							   context: MarkdownPostProcessorContext,
 							   regex: RegExp,
 							   characters: Character[]): void {
-	const sourceLines = getSourceLines(sectionEl, context);
-	if (sourceLines.length === 0) return;
+	const sourceLines = getSourceLines(sectionElement, context)
+	if (sourceLines.length === 0) return
 
 	const parsedLines = sourceLines.map((sourceLine) => ({
 		sourceLine,
 		parsed: parseSource(sourceLine, regex, characters),
-	}));
-	if (parsedLines.some(({ parsed }) => parsed === null)) return;
+	}))
+	if (parsedLines.some(({ parsed }) => parsed === null)) return
 
-	const output = createFragment();
+	const output = createFragment()
 	for (const { sourceLine, parsed } of parsedLines) {
-		if (!parsed) continue;
-		const line = createDialogueBox(parsed);
-		let invalidNamespace = false;
-		for (const namespace of parsed.namespaces) { if (!applyNamespace(namespace, line)) invalidNamespace = true }
-		if (invalidNamespace) { line.className = "invalid-namespace"; line.textContent = sourceLine }
-		output.appendChild(line);
+		if (!parsed) continue
+		const line = createDialogueBox(parsed)
+		let invalidOption = false
+		for (const option of parsed.options) {
+			const resolved = resolveOptions([option])
+			if (resolved) {
+				applyOptions(resolved, line)
+			} else {
+				invalidOption = true
+			}
+		}
+		if (invalidOption) {
+			line.className = "invalid-namespace"
+			line.textContent = sourceLine
+		}
+		output.appendChild(line)
 	}
 
-	sectionEl.replaceWith(output);
+	sectionElement.replaceWith(output)
 }

@@ -22,18 +22,18 @@
 }
 
 .character-card-fields,
-.character-card-ctrl {
+.character-card-controls {
 	display: flex;
 	gap: 0.5rem;
 }
 
-.character-colour-ctrl {
+.character-colour-controls {
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
 }
 
-/* Dialogue decorator editor */
+/* Decorator customization modal */
 
 .modal.decorator-customization-modal {
 	width: min(42rem, calc(100vw - 2rem));
@@ -47,7 +47,7 @@
 	margin-bottom: 1rem;
 }
 
-.decorator-option {
+.decorator-choice {
 	display: block;
 	flex: 0 0 auto;
 	min-height: 5rem;
@@ -55,17 +55,17 @@
 	cursor: pointer;
 }
 
-.decorator-option[aria-pressed="true"] .dialogue-box {
+.decorator-choice[aria-pressed="true"] .dialogue-box {
 	outline: 2px solid var(--interactive-accent);
 	outline-offset: 4px;
 }
 
-.decorator-option:focus-visible .dialogue-box {
+.decorator-choice:focus-visible .dialogue-box {
 	outline: 2px dashed var(--interactive-accent);
 	outline-offset: 4px;
 }
 
-.decorator-option .dialogue-box {
+.decorator-choice .dialogue-box {
 	box-sizing: border-box;
 	width: 9rem;
 	min-height: 3.25rem;

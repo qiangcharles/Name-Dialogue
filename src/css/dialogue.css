@@ -63,6 +63,76 @@
 	min-width: 100%;
 }
 
+.cm-editor .dialogue-drag-handle {
+	position: absolute;
+	z-index: 2;
+	top: calc(var(--decorator-vertical-gap, 1.2rem) + 0.5rem);
+	left: 0.1rem;
+	width: 0.8rem;
+	height: 1.2rem;
+	color: var(--text-muted);
+	cursor: grab;
+	user-select: none;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.cm-editor .cm-line.dialogue-box:hover .dialogue-drag-handle,
+.cm-editor .cm-line.dialogue-drag-source .dialogue-drag-handle {
+	visibility: visible;
+	pointer-events: auto;
+}
+
+.cm-editor .dialogue-drag-handle::before {
+	position: absolute;
+	inset: 0.15rem 0.2rem;
+	background-image: radial-gradient(circle, currentColor 1px, transparent 1.2px);
+	background-size: 4px 4px;
+	content: "";
+}
+
+.cm-editor .dialogue-drag-handle:active {
+	cursor: grabbing;
+}
+
+@media (hover: none) and (pointer: coarse) {
+	.cm-editor .dialogue-drag-handle {
+		display: none;
+	}
+}
+
+.cm-editor .cm-line.dialogue-drag-source {
+	opacity: 0.45;
+}
+
+.dialogue-drop-preview {
+	position: relative;
+	margin: 0;
+	pointer-events: none;
+	opacity: 0.55;
+}
+
+.cm-editor.dialogue-pointer-ghost {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: var(--layer-popover, 1000);
+	display: block;
+	overflow: visible;
+	pointer-events: none;
+	transform-origin: top left;
+	opacity: 0.7;
+}
+
+.dialogue-pointer-ghost .cm-content {
+	min-height: 0;
+	padding: 0;
+}
+
+.dialogue-phantom-box {
+	pointer-events: none;
+}
+
 .cm-editor .cm-line.dialogue-line-left,
 .cm-editor .cm-line.dialogue-line-right {
 	width: fit-content;
@@ -78,6 +148,10 @@
 	transform: translateX(-100%);
 }
 
+.cm-editor .cm-line.dialogue-phantom-box {
+	max-width: 100%;
+}
+
 /* Variant styles */
 
 .decorator-thought { /* Overrides the .dialogue-box to change border style, radius, and tint */
@@ -90,7 +164,7 @@
 	);
 }
 
-.dialogue-style-thought {
+.text-style-thought {
 	font-style: italic;
 }
 
@@ -98,8 +172,7 @@
 
 .dialogue-has-content::before,
 .dialogue-has-content::after,
-.dialogue-text-start::before,
-.dialogue-text-end::after {
+.dialogue-wrapper {
 	color: var(--character-colour);
 	opacity: 80%;
 	font-weight: 700;
@@ -107,24 +180,19 @@
 }
 
 .decorator-default.dialogue-has-content::before,
-.decorator-default.dialogue-has-content::after,
-.dialogue-style-default.dialogue-text-start::before,
-.dialogue-style-default.dialogue-text-end::after {
+.decorator-default.dialogue-has-content::after {
 	content: '"';
 }
 
-.decorator-thought.dialogue-has-content::before,
-.dialogue-style-thought.dialogue-text-start::before {
+.decorator-thought.dialogue-has-content::before {
 	content: "(";
 }
 
-.decorator-thought.dialogue-has-content::after,
-.dialogue-style-thought.dialogue-text-end::after {
+.decorator-thought.dialogue-has-content::after {
 	content: ")";
 }
 
-.dialogue-style-thought.dialogue-text-start::before,
-.dialogue-style-thought.dialogue-text-end::after,
+.dialogue-wrapper-thought,
 .decorator-thought.dialogue-has-content::before,
 .decorator-thought.dialogue-has-content::after {
 	font-style: italic;
@@ -159,8 +227,7 @@
 }
 
 .dialogue-namespace-active .dialogue-text,
-.dialogue-namespace-active .dialogue-text-start::before,
-.dialogue-namespace-active .dialogue-text-end::after,
+.dialogue-namespace-active .dialogue-wrapper,
 .dialogue-namespace-active.dialogue-has-content::before,
 .dialogue-namespace-active.dialogue-has-content::after {
 	font-size: 0.85em;
