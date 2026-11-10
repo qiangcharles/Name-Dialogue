@@ -1,9 +1,9 @@
-import { Modal, Notice, Setting } from "obsidian";
-import type { App, ButtonComponent } from "obsidian";
-import type { Character } from "../../types";
-import { CharacterListEditor } from "./characterListEditor";
-import { DiscardChangesModal } from "./discardChangesModal";
-import { validateCharacter } from "../../characters";
+import { Modal, Notice, Setting } from "obsidian"
+import type { App, ButtonComponent } from "obsidian"
+import type { Character } from "../../types"
+import { CharacterListEditor } from "./characterListEditor"
+import { DiscardChangesModal } from "./discardChangesModal"
+import { validateCharacters } from "../../characters"
 
 export class CharacterListModal extends Modal {
 	constructor(
@@ -11,9 +11,9 @@ export class CharacterListModal extends Modal {
 		private characters: Character[],
 		private onSave: (characters: Character[]) => Promise<void>
 	) {
-		super(app);
+		super(app)
 		this.characters = characters.map((character) =>
-			({...character, aliases: [...character.aliases]})); // Draft modal; separate alias array
+			({...character, aliases: [...character.aliases]})) // Draft modal; separate alias array
 		this.previousCharacters = JSON.stringify(this.characters)
 	}
 
@@ -33,13 +33,13 @@ export class CharacterListModal extends Modal {
 	private async saveCharacters(): Promise<boolean> {
 		if (this.characters.some((character) =>
 			!character.name.trim())) {
-			new Notice("Character name cannot be blank or spaces.");
+			new Notice("Character name cannot be blank or spaces.")
 			return false
 		}
-		const validationError = validateCharacter(this.characters);
+		const validationError = validateCharacters(this.characters)
 		if (validationError) {
-			new Notice(validationError);
-			return false;
+			new Notice(validationError)
+			return false
 		}
 		try {
 			await this.onSave(this.characters)
@@ -47,9 +47,9 @@ export class CharacterListModal extends Modal {
 			this.hasUnsavedChanges()
 			return true
 		} catch (error) {
-			new Notice(error instanceof Error ? error.message : "Unable to save characters.");
-			console.error("[name-dialogue]", error);
-			return false;
+			new Notice(error instanceof Error ? error.message : "Unable to save characters.")
+			console.error("[name-dialogue]", error)
+			return false
 		}
 	}
 
@@ -58,25 +58,25 @@ export class CharacterListModal extends Modal {
 			new DiscardChangesModal(
 				this.app,
 				() => {
-					this.discardConfirmed = true;
-					this.close();
+					this.discardConfirmed = true
+					this.close()
 				},
 				() => this.saveCharacters(),
 				() => this.close(),
-			).open();
-			return;
+			).open()
+			return
 		}
 		super.close()
 	}
 
 	onOpen(): void {
-		this.modalEl.classList.add("character-list-modal");
-		this.setTitle("Characters");
+		this.modalEl.classList.add("character-list-modal")
+		this.setTitle("Characters")
 		new CharacterListEditor(this.characters, () => {
 			this.hasUnsavedChanges()
 		})
 			.render(this.contentEl.createDiv())
-		const actions = new Setting(this.contentEl);
+		const actions = new Setting(this.contentEl)
 
 		actions.addButton((button) =>
 			button.setButtonText("Close").onClick(() =>

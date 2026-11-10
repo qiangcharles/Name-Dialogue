@@ -9,21 +9,38 @@ Until I see a need for it, I'm going to keep `contributing.md` very sweet and sh
 
 ## Style guide
 
-I prefer camelCase, while CSS is dashed. and I'm in the process of also standardizing the terms.
+Use camelCase for TypeScript identifiers and dashed names for CSS. Prefer short, complete words without abbreviations
 
-- `namespace` refers to the first part of any `Name Dialogue` line (i.e: namespace:dialogue); it encompasses `character` and `options` before `dialogue`
-	- `character` refers to a subject that is added in the options of the plugin
-	- `options` refers to any keywords or terms in the namespace after the character
-- `wrapper` refers to any surrounding plaintext symbols (i.e: "quotation marks for spoken dialogue" or (parentheses in the case of thought dialogue))
-- `dialogue` strictly refers to the plaintext after the namespaces
-- `decorator` refers to the visual treatment of a dialogue box, such as its border, fill, and shape; the built-in decorators are `default` and `thought`
-- `dialogue-style` refers to formatting applied to the `dialogue` (i.e: italic thought text)
+- `character`: a saved subject identified by a name or alias
+- `namespace`: the complete prefix before the dialogue, including the character, any options, and the final colon
+- `option`: a keyword in the namespace after the character, such as `thought` or `right`
+- `dialogue`: the text after the namespace
+- `wrapper`: a visual symbol added around the dialogue, such as quotation marks or parentheses. Symbols typed in the dialogue remain part of the text
+- `decorator`: the visual treatment of a dialogue box, such as its border, fill, and shape. The built-in decorators are `default` and `thought`
+- `text style`: formatting applied to the dialogue text, such as italic thought text
 
 Example:
 ```plaintext
 Alice:Hi!
 Bob:thought:right:Who is she talking to?
 ```
-`Alice` is the `character`, `Hi!` is the `dialogue`.
-`Bob` is the `character`, `thought` is the first option, `right` is the second option, and `Bob:thought:right:` encompasses the `namespace`.
-`Who is she talking to?` is the `dialogue`.
+`Alice` is the `character`, `Hi!` is the `dialogue`
+`Bob` is the `character`, `thought` is the first option, `right` is the second option, and `Bob:thought:right:` encompasses the `namespace`
+`Who is she talking to?` is the `dialogue`
+
+The saved `namespaceRegex` uses named groups `name`, `namespaces`, and `dialogue`. The `namespaces` group contains the options; its name is retained for compatibility with existing settings
+
+## Testing
+
+To test code, I use `Vitest` and `jsdom`. Then, I manually review on Obsidian
+- Run `npm test` for regression tests. The test runner requires Node.js 22.12+
+- Run `npm run build` for the production bundle and `npm run lint` for lint checks. Changes to the editor should also be manually reviewed in Obsidian
+
+jsdom tests *only* simulate CodeMirror formatting, so make sure you also do the manual review.
+
+## Decorations
+
+This is probably the most convoluted aspect of the project, but I've tried to neatly contain it in the following style:
+- When the plugin parses each _visible_ line in the active Obsidian file, checking if any line matches the regex for a `name-dialogue` style line
+  - On `true`, it will then scan said line to identify the `namespace` and `dialogue`
+  - Then, it will parse the `namespace` to determine the `character` and `options`
