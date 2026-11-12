@@ -116,6 +116,34 @@ describe("empty dialogue handling", () => {
 	}
 })
 
+describe("trailing whitespace", () => {
+	for (const { source, displayed } of [
+		{ source: "Alice:Hello ", displayed: 'Alice"Hello "' },
+		{ source: "Alice:Hello  ", displayed: 'Alice"Hello  "' },
+		{ source: "Ally:thought:Quiet ", displayed: "Alice(Quiet )" },
+	]) {
+		it(`trailing whitespace stays inside the wrapper: [${source}] -> [${displayed}]`, () => {
+			const view = openEditor(source)
+			expect(view.dom.querySelector(".cm-line")?.textContent).toBe(displayed)
+			expect(view.dom.querySelectorAll(".dialogue-wrapper")).toHaveLength(2)
+			expect(view.state.doc.toString()).toBe(source)
+
+			// The trailing whitespace must not render after the closing wrapper.
+			const close = view.dom.querySelector<HTMLElement>(".dialogue-wrapper-close")
+			expect(close).not.toBeNull()
+			const nextNode = close?.nextSibling
+			expect(nextNode?.textContent ?? "").not.toMatch(/\s/)
+		})
+	}
+
+	it("whitespace-only dialogue renders no wrapper: [Alice: ] -> no wrapper", () => {
+		const source = "Alice: "
+		const view = openEditor(source)
+		expect(view.dom.querySelectorAll(".dialogue-wrapper")).toHaveLength(0)
+		expect(view.state.doc.toString()).toBe(source)
+	})
+})
+
 describe("dialogue drag handles", () => {
 	it("consecutive dialogue: [Alice:Hello | Alice:thought:Quiet] -> [one handle per line]", () => {
 		const source = "Alice:Hello\nAlice:thought:Quiet"

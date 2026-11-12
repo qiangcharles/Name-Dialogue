@@ -17,6 +17,7 @@ interface SourceOffsets {
 	namespaceEnd: number
 	dialogueStart: number
 	dialogueEnd: number
+	dialogueRawEnd: number
 	rawDialogue: string
 }
 
@@ -29,6 +30,10 @@ export interface ParsedDialogue {
 	namespaceEnd: number
 	dialogueStart: number
 	dialogueEnd: number
+	// End of the dialogue group including trailing whitespace; used to place
+	// the closing wrapper so trailing spaces stay inside the wrapper instead of
+	// leaking out after it.
+	dialogueRawEnd: number
 	escapedColonOffsets: number[]
 }
 
@@ -75,8 +80,9 @@ function getSourceOffsets(
 	const trailingWhitespace = rawDialogueGroup.length - rawDialogueGroup.trimEnd().length
 	const dialogueStart = prefixEnd + leadingWhitespace
 	const dialogueEnd = match.index + match[0].length - trailingWhitespace
+	const dialogueRawEnd = prefixEnd + rawDialogueGroup.length
 	const rawDialogue = line.slice(dialogueStart, dialogueEnd)
-	return { namespaceStart, namespaceEnd: prefixEnd, dialogueStart, dialogueEnd, rawDialogue }
+	return { namespaceStart, namespaceEnd: prefixEnd, dialogueStart, dialogueEnd, dialogueRawEnd, rawDialogue }
 }
 
 function getEscapedColonOffsets(rawDialogue: string, dialogueStart: number): number[] {
@@ -117,6 +123,7 @@ export function parseSource(
 		namespaceEnd: offsets.namespaceEnd,
 		dialogueStart: offsets.dialogueStart,
 		dialogueEnd: offsets.dialogueEnd,
+		dialogueRawEnd: offsets.dialogueRawEnd,
 		escapedColonOffsets,
 	}
 }

@@ -43,6 +43,7 @@ function decorateText(builder: RangeSetBuilder<Decoration>,
 					  parsed: ParsedDialogue): void {
 	const dialogueStart = lineStart + parsed.dialogueStart
 	const dialogueEnd = lineStart + parsed.dialogueEnd
+	const dialogueRawEnd = lineStart + parsed.dialogueRawEnd
 	if (dialogueStart >= dialogueEnd) return
 	const isThought = parsed.options.includes("thought")
 	const style = isThought ? "thought" : "default"
@@ -82,7 +83,10 @@ function decorateText(builder: RangeSetBuilder<Decoration>,
 				: Decoration.mark({ class: className }),
 		)
 	}
-	builder.add(dialogueEnd, dialogueEnd, Decoration.widget({
+	// The closing wrapper is placed at the untrimmed end so any trailing
+	// whitespace stays inside the wrapper rather than appearing after it
+	// while the dialogue box still grows to include it.
+	builder.add(dialogueRawEnd, dialogueRawEnd, Decoration.widget({
 		widget: new InlineTextWidget(isThought ? ")" : '"', `${wrapperStyle} dialogue-wrapper-close`),
 		side: 1,
 	}))
